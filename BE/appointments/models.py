@@ -1,6 +1,6 @@
 # BE/appointments/models.py
 from django.db import models
-from users.models import Doctor, Patient
+from users.models import Doctor, Patient  # Correct relative import
 
 class Schedule(models.Model):
     doctor = models.ForeignKey('users.Doctor', on_delete=models.CASCADE, related_name='schedules')

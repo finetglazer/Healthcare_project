@@ -28,7 +28,7 @@ INSTALLED_APPS = [
     # Your apps
     'users',
     'appointments',
-    'healthcare',
+    # 'healthcare',
 ]
 
 MIDDLEWARE = [
@@ -115,3 +115,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ],
 }
+
+
+# Add this to your settings.py if it's not already there
+AUTH_USER_MODEL = 'users.User'
