@@ -1,5 +1,7 @@
+// Update fe/src/components/Dashboard/Sidebar.js to link to new routes
 import React from 'react';
 import { Nav } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
 
 const Sidebar = ({ userType }) => {
     return (
@@ -9,42 +11,36 @@ const Sidebar = ({ userType }) => {
             </div>
 
             <Nav className="flex-column">
-                <Nav.Link href="#dashboard" className="sidebar-link">
+                <Nav.Link as={Link} to="/dashboard" className="sidebar-link">
                     Dashboard
                 </Nav.Link>
 
                 {userType === 'doctor' ? (
                     // Doctor specific links
                     <>
-                        <Nav.Link href="#schedule" className="sidebar-link">
-                            My Schedule
+                        <Nav.Link as={Link} to="/doctor/create-schedule" className="sidebar-link">
+                            Create Schedule
                         </Nav.Link>
-                        <Nav.Link href="#appointments" className="sidebar-link">
+                        <Nav.Link as={Link} to="/doctor/schedules" className="sidebar-link">
+                            My Schedules
+                        </Nav.Link>
+                        <Nav.Link as={Link} to="/doctor/appointments" className="sidebar-link">
                             Appointments
-                        </Nav.Link>
-                        <Nav.Link href="#patients" className="sidebar-link">
-                            My Patients
                         </Nav.Link>
                     </>
                 ) : (
                     // Patient specific links
                     <>
-                        <Nav.Link href="#book" className="sidebar-link">
-                            Book Appointment
-                        </Nav.Link>
-                        <Nav.Link href="#appointments" className="sidebar-link">
-                            My Appointments
-                        </Nav.Link>
-                        <Nav.Link href="#doctors" className="sidebar-link">
+                        <Nav.Link as={Link} to="/find-doctors" className="sidebar-link">
                             Find Doctors
                         </Nav.Link>
-                        <Nav.Link href="#records" className="sidebar-link">
-                            Medical Records
+                        <Nav.Link as={Link} to="/my-appointments" className="sidebar-link">
+                            My Appointments
                         </Nav.Link>
                     </>
                 )}
 
-                <Nav.Link href="#profile" className="sidebar-link">
+                <Nav.Link as={Link} to="/profile" className="sidebar-link">
                     Profile
                 </Nav.Link>
             </Nav>

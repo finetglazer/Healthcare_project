@@ -140,6 +140,9 @@ REST_FRAMEWORK = {
     ],
 }
 
+# Add this to the settings file
+CSRF_TRUSTED_ORIGINS = ['http://localhost:3000']
+
 
 # Add this to your settings.py if it's not already there
 AUTH_USER_MODEL = 'users.User'

@@ -13,5 +13,39 @@ services:
     ports:
       - "5432:5432"
 
+  # Backend
+  backend:
+    build:
+      context: ./BE
+      dockerfile: Dockerfile
+    command: >
+      bash -c "python manage.py migrate &&
+               python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - ./BE:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/healthcare_db
+      - DEBUG=True
+
+  # Frontend
+  frontend:
+    build:
+      context: ./fe
+      dockerfile: Dockerfile
+    volumes:
+      - ./fe:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000/api
+
 volumes:
   postgres_data:
