@@ -15,7 +15,6 @@ function getCSRFToken() {
     return cookieValue;
 }
 
-// Set up axios to include CSRF token in headers
 axios.interceptors.request.use(config => {
     config.headers['X-CSRFToken'] = getCSRFToken();
     return config;
