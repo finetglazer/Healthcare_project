@@ -1,7 +1,8 @@
 import React from 'react';
 import { Navbar, Container, Nav, NavDropdown } from 'react-bootstrap';
 
-const TopNavbar = ({ user }) => {
+// Add onLogout to the parameters
+const TopNavbar = ({ user, onLogout }) => {
     return (
         <Navbar expand="lg" className="top-navbar py-2">
             <Container fluid>
@@ -19,7 +20,8 @@ const TopNavbar = ({ user }) => {
                             <NavDropdown.Item href="#profile">Profile</NavDropdown.Item>
                             <NavDropdown.Item href="#settings">Settings</NavDropdown.Item>
                             <NavDropdown.Divider />
-                            <NavDropdown.Item href="#logout">Logout</NavDropdown.Item>
+                            {/* Change href to onClick */}
+                            <NavDropdown.Item onClick={onLogout}>Logout</NavDropdown.Item>
                         </NavDropdown>
                     </Nav>
                 </Navbar.Collapse>

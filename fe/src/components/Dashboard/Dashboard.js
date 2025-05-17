@@ -3,10 +3,11 @@ import { Container, Row, Col } from 'react-bootstrap';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 
-const Dashboard = ({ user }) => {
+// Add onLogout to the parameters
+const Dashboard = ({ user, onLogout }) => {
     return (
         <div className="dashboard-container">
-            <Navbar user={user} />
+            <Navbar user={user} onLogout={onLogout} />
             <Container fluid>
                 <Row>
                     <Col md={2} className="px-0">

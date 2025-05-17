@@ -6,6 +6,23 @@ const API_URL = 'http://localhost:8000/api/users/';
 // Add cookies support for session authentication
 axios.defaults.withCredentials = true;
 
+// Get CSRF token from cookies
+function getCSRFToken() {
+    const cookieValue = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('csrftoken='))
+        ?.split('=')[1];
+    return cookieValue;
+}
+
+// Set up axios to include CSRF token in headers
+axios.interceptors.request.use(config => {
+    config.headers['X-CSRFToken'] = getCSRFToken();
+    return config;
+});
+
+// Rest of your auth service code...
+
 // Default accounts for fallback when backend is unavailable
 const DEFAULT_ACCOUNTS = [
     {
@@ -77,6 +94,20 @@ const authService = {
 
             // Simulate successful registration
             return { success: true };
+        }
+    },
+
+    // Add this method to your authService object
+    logout: async () => {
+        try {
+            // Try to connect to the backend
+            await axios.post(API_URL + 'logout/');
+            // Clear any local state or storage if needed
+            return true;
+        } catch (error) {
+            console.log('Backend connection failed, using fallback mode');
+            // In fallback mode, just return success
+            return true;
         }
     },
 

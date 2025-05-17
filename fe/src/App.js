@@ -40,6 +40,14 @@ function App() {
     setCurrentUser(userData);
   };
 
+// Add this function to App.js if it's not already there
+  const handleLogout = async () => {
+    await authService.logout();
+    setIsLoggedIn(false);
+    setCurrentUser(null);
+  };
+
+
   if (loading) {
     return <div className="loading-spinner">Loading...</div>;
   }
@@ -52,7 +60,7 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route
                 path="/dashboard"
-                element={isLoggedIn ? <Dashboard user={currentUser} /> : <Navigate to="/" />}
+                element={isLoggedIn ? <Dashboard user={currentUser} onLogout={handleLogout} /> : <Navigate to="/" />}
             />
           </Routes>
         </div>

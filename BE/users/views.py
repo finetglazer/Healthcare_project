@@ -5,8 +5,11 @@ from rest_framework.response import Response
 from django.contrib.auth import login, logout
 from .serializers import UserRegistrationSerializer, LoginSerializer, UserSerializer, DoctorSerializer, PatientSerializer
 from .models import User, Doctor, Patient
+from rest_framework.permissions import AllowAny
 
 class RegisterView(APIView):
+    permission_classes = [AllowAny]  # Add this line
+
     def post(self, request):
         serializer = UserRegistrationSerializer(data=request.data)
         if serializer.is_valid():
@@ -59,3 +62,8 @@ class UserInfoView(APIView):
 
             return Response(response_data)
         return Response({"detail": "Not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+
+class LogoutView(APIView):
+    def post(self, request):
+        logout(request)
+        return Response({"detail": "Successfully logged out."}, status=status.HTTP_200_OK)
