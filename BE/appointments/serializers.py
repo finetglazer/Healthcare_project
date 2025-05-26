@@ -9,7 +9,7 @@ class ScheduleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Schedule
         fields = ['id', 'doctor', 'date', 'start_time', 'end_time', 'slot_duration', 'is_available', 'doctor_details']
-        read_only_fields = ['doctor_details']
+        read_only_fields = ['doctor', 'doctor_details']  # Add 'doctor' here to make it read-only
 
     def get_doctor_details(self, obj):
         return {

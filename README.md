@@ -7,5 +7,5 @@ pass: 123
 
 patient:
 
-usr: ManhHung
+usr: patient1
 pass: 123

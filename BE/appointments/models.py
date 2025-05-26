@@ -1,6 +1,7 @@
 # BE/appointments/models.py (update)
 from django.db import models
 from users.models import Doctor, Patient
+# from BE.users.models import Doctor, Patient
 
 class Schedule(models.Model):
     DURATION_CHOICES = (

@@ -6,7 +6,17 @@ from django.db.models import Q
 from datetime import datetime, timedelta
 from .models import Schedule, Appointment
 from .serializers import ScheduleSerializer, AppointmentSerializer
-from .models import Doctor
+from users.models import Doctor
+from users.serializers import DoctorSerializer, UserSerializer
+from rest_framework import serializers
+
+
+class DoctorWithUserSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+
+    class Meta:
+        model = Doctor
+        fields = ('id', 'specialization', 'user')
 
 # Doctor Schedule Management
 class DoctorScheduleListCreateView(generics.ListCreateAPIView):
@@ -18,6 +28,8 @@ class DoctorScheduleListCreateView(generics.ListCreateAPIView):
         return Schedule.objects.none()
 
     def perform_create(self, serializer):
+        # Get the doctor instance associated with the current user
+        from users.models import Doctor
         doctor = Doctor.objects.get(user=self.request.user)
         serializer.save(doctor=doctor)
 
@@ -31,7 +43,7 @@ class DoctorScheduleDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 # Patient Appointment Booking
 class DoctorListView(generics.ListAPIView):
-    serializer_class = DoctorSerializer
+    serializer_class = DoctorWithUserSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ['specialization', 'user__first_name', 'user__last_name']
 
