@@ -1,7 +1,6 @@
 # BE/appointments/serializers.py
 from rest_framework import serializers
 from .models import Schedule, Appointment
-from users.serializers import UserSerializer, DoctorSerializer, PatientSerializer
 
 class ScheduleSerializer(serializers.ModelSerializer):
     doctor_details = serializers.SerializerMethodField()
@@ -9,7 +8,7 @@ class ScheduleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Schedule
         fields = ['id', 'doctor', 'date', 'start_time', 'end_time', 'slot_duration', 'is_available', 'doctor_details']
-        read_only_fields = ['doctor', 'doctor_details']  # Add 'doctor' here to make it read-only
+        read_only_fields = ['doctor', 'doctor_details']
 
     def get_doctor_details(self, obj):
         return {

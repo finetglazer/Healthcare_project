@@ -1,7 +1,5 @@
-# BE/appointments/models.py (update)
+# BE/appointments/models.py
 from django.db import models
-from users.models import Doctor, Patient
-# from BE.users.models import Doctor, Patient
 
 class Schedule(models.Model):
     DURATION_CHOICES = (
@@ -18,6 +16,9 @@ class Schedule(models.Model):
     slot_duration = models.IntegerField(choices=DURATION_CHOICES, default=30)
     is_available = models.BooleanField(default=True)
 
+    def __str__(self):
+        return f"Schedule for Dr. {self.doctor.user.last_name} on {self.date}"
+
 class Appointment(models.Model):
     STATUS_CHOICES = (
         ('CONFIRMED', 'Confirmed'),
@@ -30,6 +31,9 @@ class Appointment(models.Model):
     schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE, related_name='appointments')
     date = models.DateField()
     time = models.TimeField()
-    end_time = models.TimeField()  # Added end_time
+    end_time = models.TimeField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='CONFIRMED')
-    reason = models.TextField()  # Made required
+    reason = models.TextField()
+
+    def __str__(self):
+        return f"Appointment: {self.patient.user.first_name} with Dr. {self.doctor.user.last_name} on {self.date}"

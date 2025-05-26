@@ -4,18 +4,28 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.db.models import Q
 from datetime import datetime, timedelta
+from django.apps import apps
 from .models import Schedule, Appointment
 from .serializers import ScheduleSerializer, AppointmentSerializer
-from users.models import Doctor
-from users.serializers import DoctorSerializer, UserSerializer
 from rest_framework import serializers
 
+# Get models dynamically to avoid import issues
+def get_user_models():
+    User = apps.get_model('users', 'User')
+    Doctor = apps.get_model('users', 'Doctor')
+    Patient = apps.get_model('users', 'Patient')
+    return User, Doctor, Patient
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = apps.get_model('users', 'User')
+        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'phone_number', 'is_doctor', 'is_patient')
 
 class DoctorWithUserSerializer(serializers.ModelSerializer):
     user = UserSerializer()
 
     class Meta:
-        model = Doctor
+        model = apps.get_model('users', 'Doctor')
         fields = ('id', 'specialization', 'user')
 
 # Doctor Schedule Management
@@ -29,7 +39,7 @@ class DoctorScheduleListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         # Get the doctor instance associated with the current user
-        from users.models import Doctor
+        User, Doctor, Patient = get_user_models()
         doctor = Doctor.objects.get(user=self.request.user)
         serializer.save(doctor=doctor)
 
@@ -48,7 +58,7 @@ class DoctorListView(generics.ListAPIView):
     search_fields = ['specialization', 'user__first_name', 'user__last_name']
 
     def get_queryset(self):
-        from users.models import Doctor
+        User, Doctor, Patient = get_user_models()
         return Doctor.objects.all()
 
 class DoctorScheduleView(generics.ListAPIView):
@@ -68,7 +78,7 @@ class BookAppointmentView(APIView):
             return Response({"detail": "Only patients can book appointments"},
                             status=status.HTTP_403_FORBIDDEN)
 
-        from users.models import Patient
+        User, Doctor, Patient = get_user_models()
         patient = Patient.objects.get(user=request.user)
 
         # Get schedule and validate
@@ -123,7 +133,7 @@ class PatientAppointmentListView(generics.ListAPIView):
 
     def get_queryset(self):
         if self.request.user.is_patient:
-            from users.models import Patient
+            User, Doctor, Patient = get_user_models()
             patient = Patient.objects.get(user=self.request.user)
             return Appointment.objects.filter(patient=patient)
         return Appointment.objects.none()
@@ -134,6 +144,7 @@ class DoctorAppointmentListView(generics.ListAPIView):
 
     def get_queryset(self):
         if self.request.user.is_doctor:
+            User, Doctor, Patient = get_user_models()
             doctor = Doctor.objects.get(user=self.request.user)
             return Appointment.objects.filter(doctor=doctor)
         return Appointment.objects.none()

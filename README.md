@@ -9,3 +9,7 @@ patient:
 
 usr: patient1
 pass: 123
+
+username: admin
+email: admin@gmail.com
+pass: 123
