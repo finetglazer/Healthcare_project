@@ -2,6 +2,11 @@
   font-family: 'Roboto', sans-serif;
 }
 
+:root {
+  --bs-primary: #274375;
+  --bs-primary-rgb: 39, 67, 117;
+}
+
 .auth-wrapper {
   display: flex;
   justify-content: center;
@@ -18,7 +23,7 @@
 }
 
 .auth-header {
-  background-color: #1a5276;
+  background-color: #274375;
   color: white;
   border-radius: 10px 10px 0 0;
   padding: 20px;
@@ -30,18 +35,18 @@
 }
 
 .btn-primary {
-  background-color: #1a5276;
-  border-color: #1a5276;
+  background-color: #274375;
+  border-color: #274375;
 }
 
 .btn-primary:hover {
-  background-color: #154360;
-  border-color: #154360;
+  background-color: #1e3557;
+  border-color: #1e3557;
 }
 
 .nav-sidebar {
   min-height: 100vh;
-  background-color: #1a5276;
+  background-color: #274375;
   color: white;
   padding-top: 20px;
 }
@@ -54,7 +59,7 @@
 }
 
 .sidebar-link:hover {
-  background-color: #154360;
+  background-color: #1e3557;
   color: white;
 }
 

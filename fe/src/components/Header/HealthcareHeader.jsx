@@ -48,7 +48,7 @@ const HealthcareHeader = () => {
             <Navbar
                 expand="lg"
                 className="py-3 shadow-lg"
-                style={{ borderBottom: '4px solid #0d6efd' }}
+                style={{ borderBottom: '4px solid #274375' }}
                 bg="white"
             >
                 <Container>
@@ -59,7 +59,7 @@ const HealthcareHeader = () => {
                             style={{
                                 width: '48px',
                                 height: '48px',
-                                background: 'linear-gradient(135deg, #0d6efd, #0b5ed7)',
+                                background: 'linear-gradient(135deg, #274375, #1e3557)',
                                 borderRadius: '50%',
                                 color: 'white',
                                 fontSize: '24px'
@@ -173,7 +173,7 @@ const HealthcareHeader = () => {
             <style jsx>{`
                 .hover-bg-light:hover {
                     background-color: #f8f9fa !important;
-                    color: #0d6efd !important;
+                    color: #274375 !important;
                 }
             `}</style>
         </header>
