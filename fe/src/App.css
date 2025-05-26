@@ -1,3 +1,5 @@
+/* Add these styles to fe/src/App.css */
+
 .App {
   font-family: 'Roboto', sans-serif;
 }
@@ -5,8 +7,11 @@
 :root {
   --bs-primary: #274375;
   --bs-primary-rgb: 39, 67, 117;
+  --sidebar-width: 250px;
+  --sidebar-collapsed-width: 80px;
 }
 
+/* Auth Styles */
 .auth-wrapper {
   display: flex;
   justify-content: center;
@@ -44,31 +49,315 @@
   border-color: #1e3557;
 }
 
+/* Sidebar Styles */
 .nav-sidebar {
   min-height: 100vh;
-  background-color: #274375;
+  background: linear-gradient(180deg, #274375 0%, #1e3557 100%);
   color: white;
-  padding-top: 20px;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  width: var(--sidebar-width);
+}
+
+.nav-sidebar.collapsed {
+  width: var(--sidebar-collapsed-width);
+}
+
+/* Sidebar Header */
+.sidebar-header {
+  position: relative;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-title {
+  color: white;
+  font-weight: 600;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.toggle-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  color: white;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  transform: scale(1.1);
+}
+
+.toggle-btn:focus {
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+}
+
+/* Navigation */
+.sidebar-nav {
+  padding: 1rem 0;
+  flex-grow: 1;
 }
 
 .sidebar-link {
-  color: white;
-  padding: 10px 15px;
-  display: block;
+  color: rgba(255, 255, 255, 0.8);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
   text-decoration: none;
+  transition: all 0.2s ease;
+  border-left: 3px solid transparent;
+  margin: 2px 0;
+}
+
+.sidebar-link.collapsed {
+  justify-content: center;
+  padding: 12px 0;
 }
 
 .sidebar-link:hover {
-  background-color: #1e3557;
+  background: rgba(255, 255, 255, 0.1);
   color: white;
+  border-left-color: rgba(255, 255, 255, 0.5);
+  transform: translateX(5px);
 }
 
+.sidebar-link:focus {
+  color: white;
+  background: rgba(255, 255, 255, 0.15);
+  outline: none;
+}
+
+.sidebar-link.active {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border-left-color: white;
+}
+
+.nav-icon {
+  min-width: 20px;
+  margin-right: 12px;
+  transition: all 0.2s ease;
+}
+
+.sidebar-link.collapsed .nav-icon {
+  margin-right: 0;
+}
+
+.nav-text {
+  white-space: nowrap;
+  overflow: hidden;
+  transition: opacity 0.2s ease;
+}
+
+.collapsed .nav-text {
+  opacity: 0;
+  width: 0;
+}
+
+/* Sidebar Footer */
+.sidebar-footer {
+  margin-top: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Top Navbar */
 .top-navbar {
   background-color: white;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  height: 60px;
 }
 
+/* Dashboard Layout */
+.dashboard-container {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.sidebar-column {
+  position: fixed;
+  top: 60px; /* Account for fixed navbar */
+  left: 0;
+  height: calc(100vh - 60px);
+  z-index: 999;
+}
+
+.main-content-column {
+  margin-left: var(--sidebar-width);
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  max-height: calc(100vh - 60px);
+  overflow-y: auto;
+  padding-top: 60px; /* Account for fixed navbar */
+}
+
+.main-content-column.collapsed {
+  margin-left: var(--sidebar-collapsed-width);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .nav-sidebar {
+    position: fixed;
+    top: 60px; /* Account for fixed navbar */
+    left: -250px;
+    height: calc(100vh - 60px);
+    z-index: 1050;
+    transition: left 0.3s ease;
+  }
+
+  .nav-sidebar.show {
+    left: 0;
+  }
+
+  .nav-sidebar.collapsed {
+    width: var(--sidebar-width); /* Full width on mobile even when "collapsed" */
+    left: -250px;
+  }
+
+  .nav-sidebar.collapsed.show {
+    left: 0;
+  }
+
+  .main-content-column {
+    margin-left: 0;
+    padding-top: 80px; /* More space on mobile */
+  }
+
+  .sidebar-overlay {
+    position: fixed;
+    top: 60px; /* Start below navbar */
+    left: 0;
+    width: 100vw;
+    height: calc(100vh - 60px);
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1049;
+    display: none;
+  }
+
+  .sidebar-overlay.show {
+    display: block;
+  }
+
+  .mobile-close {
+    display: block;
+  }
+
+  /* Hide desktop toggle on mobile */
+  .nav-sidebar:not(.mobile) .toggle-btn {
+    display: none;
+  }
+}
+
+/* Smooth scrollbar for main content */
+.main-content-column::-webkit-scrollbar {
+  width: 6px;
+}
+
+.main-content-column::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.main-content-column::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.main-content-column::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Tooltip styling */
+.tooltip .tooltip-inner {
+  background-color: #274375;
+  color: white;
+  font-size: 0.875rem;
+}
+
+.tooltip .tooltip-arrow::before {
+  border-right-color: #274375;
+}
+
+/* Animation for content when sidebar toggles */
+.dashboard-content {
+  transition: all 0.3s ease;
+}
+
+/* Health logo */
 .health-logo {
   height: 40px;
   margin-right: 10px;
+}
+
+/* Hover effects */
+.hover-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Add these styles to your existing App.css */
+
+/* Ensure the app takes full height and footer sticks to bottom */
+html, body, #root {
+  height: 100%;
+}
+
+.App {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Make main content area flex to push footer down */
+.App > div:not(.healthcare-footer) {
+  flex: 1;
+}
+
+/* Footer specific enhancements */
+.healthcare-footer {
+  margin-top: auto;
+}
+
+/* Ensure dashboard content doesn't overlap with footer */
+.dashboard-container {
+  min-height: calc(100vh - 200px);
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .healthcare-footer .footer-bottom .copyright {
+    font-size: 12px;
+    margin-top: 10px;
+  }
+
+  .healthcare-footer .social-links {
+    justify-content: center;
+  }
+}
+
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Focus improvements for accessibility */
+.healthcare-footer a:focus {
+  outline: 2px solid #87ceeb;
+  outline-offset: 2px;
+  border-radius: 2px;
 }

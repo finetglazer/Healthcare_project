@@ -22,6 +22,7 @@ import PatientAppointments from './components/Patient/PatientAppointments';
 import HealthcareHeader from "./components/Header";
 
 import authService from './services/auth.service';
+import HealthcareFooter from "./components/Footer/HealthcareFooter";
 
 // Component to conditionally show header
 const ConditionalHeader = ({ isLoggedIn }) => {
@@ -156,6 +157,7 @@ function App() {
                 element={<Navigate to={isLoggedIn ? "/dashboard" : "/"} />}
             />
           </Routes>
+          <HealthcareFooter />
         </div>
       </Router>
   );
