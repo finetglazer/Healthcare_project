@@ -19,6 +19,8 @@ import DoctorList from './components/Patient/DoctorList';
 import BookAppointment from './components/Patient/BookAppointment';
 import PatientAppointments from './components/Patient/PatientAppointments';
 
+import HealthcareHeader from "./components/Header";
+
 import authService from './services/auth.service';
 
 function App() {
@@ -64,6 +66,7 @@ function App() {
   return (
       <Router>
         <div className="App">
+          <HealthcareHeader />
           <Routes>
             {/* Auth Routes */}
             <Route path="/" element={!isLoggedIn ? <Login onLogin={handleLogin} /> : <Navigate to="/dashboard" />} />
