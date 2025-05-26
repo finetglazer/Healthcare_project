@@ -1,6 +1,6 @@
 // Update fe/src/App.js to include new routes
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 
@@ -22,6 +22,19 @@ import PatientAppointments from './components/Patient/PatientAppointments';
 import HealthcareHeader from "./components/Header";
 
 import authService from './services/auth.service';
+
+// Component to conditionally show header
+const ConditionalHeader = ({ isLoggedIn }) => {
+  const location = useLocation();
+  const authPages = ['/', '/register'];
+
+  // Don't show header on auth pages
+  if (authPages.includes(location.pathname) && !isLoggedIn) {
+    return null;
+  }
+
+  return <HealthcareHeader />;
+};
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -54,23 +67,42 @@ function App() {
   };
 
   const handleLogout = async () => {
-    await authService.logout();
-    setIsLoggedIn(false);
-    setCurrentUser(null);
+    try {
+      await authService.logout();
+      setIsLoggedIn(false);
+      setCurrentUser(null);
+    } catch (error) {
+      console.error('Error during logout:', error);
+      // Force logout even if API call fails
+      setIsLoggedIn(false);
+      setCurrentUser(null);
+    }
   };
 
   if (loading) {
-    return <div className="loading-spinner">Loading...</div>;
+    return (
+        <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+        </div>
+    );
   }
 
   return (
       <Router>
         <div className="App">
-          <HealthcareHeader />
+          <ConditionalHeader isLoggedIn={isLoggedIn} />
           <Routes>
             {/* Auth Routes */}
-            <Route path="/" element={!isLoggedIn ? <Login onLogin={handleLogin} /> : <Navigate to="/dashboard" />} />
-            <Route path="/register" element={<Register />} />
+            <Route
+                path="/"
+                element={!isLoggedIn ? <Login onLogin={handleLogin} /> : <Navigate to="/dashboard" />}
+            />
+            <Route
+                path="/register"
+                element={!isLoggedIn ? <Register /> : <Navigate to="/dashboard" />}
+            />
 
             {/* Dashboard */}
             <Route
@@ -116,6 +148,12 @@ function App() {
                 element={isLoggedIn && currentUser?.is_patient ?
                     <Dashboard user={currentUser} onLogout={handleLogout} content={<PatientAppointments />} /> :
                     <Navigate to="/" />}
+            />
+
+            {/* Fallback route */}
+            <Route
+                path="*"
+                element={<Navigate to={isLoggedIn ? "/dashboard" : "/"} />}
             />
           </Routes>
         </div>
