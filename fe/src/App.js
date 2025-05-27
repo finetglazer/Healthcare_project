@@ -24,6 +24,8 @@ import HealthcareHeader from "./components/Header";
 import authService from './services/auth.service';
 import HealthcareFooter from "./components/Footer/HealthcareFooter";
 
+import SymptomChecker from "./components/Chatbot/SymptomChecker";
+
 // Component to conditionally show header
 const ConditionalHeader = ({ isLoggedIn }) => {
   const location = useLocation();
@@ -155,6 +157,10 @@ function App() {
             <Route
                 path="*"
                 element={<Navigate to={isLoggedIn ? "/dashboard" : "/"} />}
+            />
+            <Route
+                path="/symptom-checker"
+                element={isLoggedIn ? <SymptomChecker /> : <Navigate to="/" />}
             />
           </Routes>
           <HealthcareFooter />
