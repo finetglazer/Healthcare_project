@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'corsheaders',
     # Your apps - order matters for imports
     'users',
+    'chatbot',
     'appointments',
 ]
 
