@@ -1,5 +1,5 @@
 // Simple Chatbot Conversation Flow
-// fe/src/components/Chatbot/ChatbotFlow.js
+// fe/src/components/Chatbot/ChatbotFlow.js (Fixed)
 
 export const conversationSteps = {
     GREETING: 'greeting',
@@ -67,7 +67,7 @@ export const chatbotQuestions = {
 
 // Simple symptom matching logic
 export const analyzeSymptoms = (userInputs) => {
-    const { primarySymptoms, severity, duration, additionalSymptoms } = userInputs;
+    const { primarySymptoms, severity, additionalSymptoms } = userInputs;
 
     // Simple scoring system
     const conditions = {
@@ -119,7 +119,7 @@ export const analyzeSymptoms = (userInputs) => {
 const getRecommendation = (topCondition) => {
     if (!topCondition) return { specialist: 'General Practitioner', urgency: 'LOW' };
 
-    const [condition, score] = topCondition;
+    const [condition] = topCondition;
 
     const recommendations = {
         'COVID-19': { specialist: 'General Practitioner', urgency: 'HIGH', note: 'Get tested immediately' },

@@ -1,8 +1,8 @@
 // Updated Find Doctors Page with Chatbot Integration
-// fe/src/components/Patient/DoctorList.js (Updated)
+// fe/src/components/Patient/DoctorList.js (Fixed)
 
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Form, InputGroup, Button, Spinner, Alert } from 'react-bootstrap';
+import { Card, Row, Col, Form, InputGroup, Button, Spinner, Badge } from 'react-bootstrap';
 import { Search, Robot, PersonFill } from 'react-bootstrap-icons';
 import { useNavigate } from 'react-router-dom';
 import appointmentService from '../../services/appointment.service';
