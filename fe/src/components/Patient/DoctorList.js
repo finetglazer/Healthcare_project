@@ -6,6 +6,8 @@ import { Card, Row, Col, Form, InputGroup, Button, Spinner, Badge } from 'react-
 import { Search, Robot, PersonFill } from 'react-bootstrap-icons';
 import { useNavigate } from 'react-router-dom';
 import appointmentService from '../../services/appointment.service';
+import medicalImage from '../../assets/images/medical-image.jpg'; // Placeholder for medical image
+
 
 const DoctorList = () => {
     const [doctors, setDoctors] = useState([]);
@@ -52,19 +54,25 @@ const DoctorList = () => {
                             style={{
                                 width: '80px',
                                 height: '80px',
-                                background: 'linear-gradient(135deg, #274375, #1e3557)',
                                 borderRadius: '50%',
-                                color: 'white',
-                                fontSize: '32px'
+                                overflow: 'hidden'
                             }}
                         >
-                            🤖
+                            <img
+                                src={medicalImage}
+                                alt="Medical"
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            />
                         </div>
                     </Col>
                     <Col md={7}>
                         <div>
                             <h5 className="text-primary mb-2">
-                                <Robot className="me-2" />
+                                <img
+                                    src={medicalImage}
+                                    alt="Medical"
+                                    style={{ width: '24px', height: '24px', marginRight: '8px' }}
+                                />
                                 Need Help Choosing the Right Doctor?
                             </h5>
                             <p className="mb-2 text-muted">
@@ -89,7 +97,11 @@ const DoctorList = () => {
                                 onClick={() => navigate('/symptom-checker')}
                                 className="mb-2"
                             >
-                                <Robot className="me-2" />
+                                <img
+                                    src={medicalImage}
+                                    alt="Medical"
+                                    style={{ width: '20px', height: '20px', marginRight: '8px' }}
+                                />
                                 Start Assessment
                             </Button>
                             <Button
@@ -228,7 +240,11 @@ const DoctorList = () => {
                             size="sm"
                             onClick={() => navigate('/symptom-checker')}
                         >
-                            <Robot className="me-2" />
+                            <img
+                                src={medicalImage}
+                                alt="Medical"
+                                style={{ width: '20px', height: '20px', marginRight: '8px' }}
+                            />
                             Get Personalized Recommendations
                         </Button>
                     </Card.Body>
@@ -237,5 +253,7 @@ const DoctorList = () => {
         </div>
     );
 };
+
+
 
 export default DoctorList;

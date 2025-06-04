@@ -5,6 +5,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Container, Row, Col, Button, Form, Alert, ProgressBar } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { chatbotQuestions, conversationSteps, analyzeSymptoms } from './ChatbotFlow';
+import medicalImage from '../../assets/images/medical-image.jpg'; // Placeholder for medical image
+
 
 const SymptomChecker = () => {
     const navigate = useNavigate();
