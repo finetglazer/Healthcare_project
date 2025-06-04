@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from ..models import MedicalCondition, Symptom, ConditionSymptom, SpecialistRecommendation
-from .serializers import SymptomAnalysisSerializer, MedicalConditionSerializer
+from ..serializers.analysis import SymptomAnalysisSerializer, MedicalConditionSerializer
 from django.db.models import Q
 
 class SymptomAnalysisView(APIView):
