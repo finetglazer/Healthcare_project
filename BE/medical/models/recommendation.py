@@ -1,10 +1,9 @@
 from django.db import models
-from .condition import MedicalCondition  # Add this import
-
+from .condition import MedicalCondition
 
 class SpecialistRecommendation(models.Model):
     condition = models.ForeignKey(MedicalCondition, on_delete=models.CASCADE)
-    specialist_type = models.CharField(max_length=100)  # "General Practitioner", "ENT", etc.
+    specialist_type = models.CharField(max_length=100)
     urgency_level = models.CharField(max_length=20, choices=[
         ('LOW', 'Can wait'),
         ('MEDIUM', 'See doctor soon'),

@@ -1,6 +1,6 @@
 # BE/appointments/serializers.py
 from rest_framework import serializers
-from .models import Schedule, Appointment
+from doctor.models.schedule import Schedule, Appointment
 
 class ScheduleSerializer(serializers.ModelSerializer):
     doctor_details = serializers.SerializerMethodField()

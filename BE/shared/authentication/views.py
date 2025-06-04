@@ -4,8 +4,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth import login, logout
 from .serializers import UserRegistrationSerializer, LoginSerializer, UserSerializer, DoctorSerializer, PatientSerializer
-from .models import User, Doctor, Patient
+from ..models.base import User, Doctor, Patient  # Fixed import path
 from rest_framework.permissions import AllowAny
+
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]  # Add this line

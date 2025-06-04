@@ -1,6 +1,7 @@
-# BE/users/serializers.py
+# Fix for shared/authentication/serializers.py
+
 from rest_framework import serializers
-from .models. import User, Doctor, Patient
+from ..models.base import User, Doctor, Patient  # Fixed import path
 from django.contrib.auth import authenticate
 
 class UserSerializer(serializers.ModelSerializer):

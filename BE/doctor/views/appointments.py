@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from django.db.models import Q
 from datetime import datetime, timedelta
 from django.apps import apps
-from .models import Schedule, Appointment
+from ..models.schedule import Schedule, Appointment
 from .serializers import ScheduleSerializer, AppointmentSerializer
 from rest_framework import serializers
 
