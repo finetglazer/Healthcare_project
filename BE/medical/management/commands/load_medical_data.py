@@ -3,7 +3,6 @@ from django.core.management.base import BaseCommand
 from medical.models import MedicalCondition, Symptom, ConditionSymptom, SpecialistRecommendation
 
 
-
 class Command(BaseCommand):
     help = 'Load sample medical data for 4 conditions'
 
