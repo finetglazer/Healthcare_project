@@ -6,7 +6,8 @@ from django.db.models import Q
 from datetime import datetime, timedelta
 from django.apps import apps
 from ..models.schedule import Schedule, Appointment
-from .serializers import ScheduleSerializer, AppointmentSerializer
+# Change this line:
+from ..serializers.schedule import ScheduleSerializer, AppointmentSerializer
 from rest_framework import serializers
 
 # Get models dynamically to avoid import issues

@@ -1,5 +1,7 @@
 from django.core.management.base import BaseCommand
-from chatbot.models import MedicalCondition, Symptom, ConditionSymptom, SpecialistRecommendation
+# Change this line:
+from medical.models import MedicalCondition, Symptom, ConditionSymptom, SpecialistRecommendation
+
 
 class Command(BaseCommand):
     help = 'Load sample medical data for 4 conditions'
