@@ -1,5 +1,5 @@
 from django.db import models
-
+from .condition import MedicalCondition  # Add this import
 
 
 class SpecialistRecommendation(models.Model):

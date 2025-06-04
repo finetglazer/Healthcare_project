@@ -1,6 +1,6 @@
 # BE/users/serializers.py
 from rest_framework import serializers
-from .models import User, Doctor, Patient
+from .models. import User, Doctor, Patient
 from django.contrib.auth import authenticate
 
 class UserSerializer(serializers.ModelSerializer):

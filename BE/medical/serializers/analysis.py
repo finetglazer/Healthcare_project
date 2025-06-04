@@ -1,5 +1,8 @@
 from rest_framework import serializers
-from .models import MedicalCondition, Symptom, ConditionSymptom, SpecialistRecommendation
+from ..models.condition import MedicalCondition
+from ..models.sympton import Symptom, ConditionSymptom
+from ..models.recommendation import SpecialistRecommendation
+
 
 class MedicalConditionSerializer(serializers.ModelSerializer):
     class Meta:

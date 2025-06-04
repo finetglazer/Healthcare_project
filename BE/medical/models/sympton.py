@@ -1,4 +1,5 @@
 from django.db import models
+from .condition import MedicalCondition  # Add this import
 
 class Symptom(models.Model):
     name = models.CharField(max_length=100)
