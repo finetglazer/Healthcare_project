@@ -1,10 +1,10 @@
-# BE/healthcare/urls.py (update)
 from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/users/', include('users.urls')),
-    path('api/appointments/', include('appointments.urls')),
-    path('api/chatbot/', include('chatbot.urls')),  # Add this line
+    path('api/auth/', include('shared.authentication.urls')),
+    path('api/doctor/', include('doctor.urls')),
+    path('api/patient/', include('patient.urls')),
+    path('api/medical/', include('medical.urls')),
 ]

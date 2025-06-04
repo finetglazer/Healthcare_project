@@ -22,13 +22,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     # Third-party apps
     'rest_framework',
     'corsheaders',
-    # Your apps - order matters for imports
-    'users',
-    'chatbot',
-    'appointments',
+
+    # Your microservice-like apps
+    'shared',
+    'doctor',
+    'patient',
+    'medical',
 ]
 
 MIDDLEWARE = [
