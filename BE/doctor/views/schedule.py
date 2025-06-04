@@ -12,21 +12,23 @@ from rest_framework import serializers
 
 # Get models dynamically to avoid import issues
 def get_user_models():
-    User = apps.get_model('users', 'User')
-    Doctor = apps.get_model('users', 'Doctor')
-    Patient = apps.get_model('users', 'Patient')
+    User = apps.get_model('shared', 'User')      # Changed from 'users'
+    Doctor = apps.get_model('shared', 'Doctor')  # Changed from 'users'
+    Patient = apps.get_model('shared', 'Patient') # Changed from 'users'
     return User, Doctor, Patient
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = apps.get_model('users', 'User')
+        model = apps.get_model('shared', 'User')  # Changed from 'users'
         fields = ('id', 'username', 'email', 'first_name', 'last_name', 'phone_number', 'is_doctor', 'is_patient')
+
 
 class DoctorWithUserSerializer(serializers.ModelSerializer):
     user = UserSerializer()
 
     class Meta:
-        model = apps.get_model('users', 'Doctor')
+        model = apps.get_model('shared', 'Doctor')  # Changed from 'users'
         fields = ('id', 'specialization', 'user')
 
 # Doctor Schedule Management
