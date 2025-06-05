@@ -127,7 +127,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 
 # Default primary key field type
-DEFAULT_AUTO_FIELD = 'django.db.models.py.BigAutoField'
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS settings for development
 CORS_ALLOW_ALL_ORIGINS = True  # For development only

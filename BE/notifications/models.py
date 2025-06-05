@@ -3,6 +3,41 @@ from django.db import models
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 
+
+# Add these functions at the top of the file, before the models
+def default_appointment_delivery():
+    return ['IN_APP', 'EMAIL']
+
+def default_medical_delivery():
+    return ['IN_APP', 'EMAIL']
+
+def default_billing_delivery():
+    return ['IN_APP', 'EMAIL']
+
+def default_system_delivery():
+    return ['IN_APP']
+
+def default_emergency_delivery():
+    return ['IN_APP', 'EMAIL', 'SMS', 'PUSH']
+
+# Then in NotificationPreference model, replace:
+# appointment_delivery_methods = models.JSONField(default=lambda: ['IN_APP', 'EMAIL'])
+appointment_delivery_methods = models.JSONField(default=default_appointment_delivery)
+
+# medical_delivery_methods = models.JSONField(default=lambda: ['IN_APP', 'EMAIL'])
+medical_delivery_methods = models.JSONField(default=default_medical_delivery)
+
+# billing_delivery_methods = models.JSONField(default=lambda: ['IN_APP', 'EMAIL'])
+billing_delivery_methods = models.JSONField(default=default_billing_delivery)
+
+# system_delivery_methods = models.JSONField(default=lambda: ['IN_APP'])
+system_delivery_methods = models.JSONField(default=default_system_delivery)
+
+# emergency_delivery_methods = models.JSONField(default=lambda: ['IN_APP', 'EMAIL', 'SMS', 'PUSH'])
+emergency_delivery_methods = models.JSONField(default=default_emergency_delivery)
+
+
+
 class Notification(models.Model):
     NOTIFICATION_TYPE_CHOICES = [
         ('APPOINTMENT', 'Appointment'),
