@@ -10,7 +10,7 @@ from ..models.schedule import Schedule, Appointment
 from ..serializers.schedule import ScheduleSerializer, AppointmentSerializer
 from rest_framework import serializers
 
-# Get models dynamically to avoid import issues
+# Get models.py dynamically to avoid import issues
 def get_user_models():
     User = apps.get_model('shared', 'User')      # Changed from 'users'
     Doctor = apps.get_model('shared', 'Doctor')  # Changed from 'users'

@@ -1,4 +1,4 @@
-# BE/users/models.py
+# BE/users/models.py.py
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
@@ -23,7 +23,7 @@ class User(AbstractUser):
         verbose_name='user permissions',
     )
 
-# Add these models back that were in your original file
+# Add these models.py back that were in your original file
 class Doctor(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='doctor_profile')
     specialization = models.CharField(max_length=100)

@@ -27,11 +27,18 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
 
-    # Your microservice-like apps
+    # Core healthcare apps
     'shared',
     'doctor',
     'patient',
     'medical',
+
+    # New healthcare modules
+    'laboratory',
+    'pharmacy',
+    'finance',
+    'records',
+    'notifications',
 ]
 
 MIDDLEWARE = [
@@ -114,8 +121,13 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+# Media files (User uploads)
+MEDIA_URL = 'media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+
 # Default primary key field type
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = 'django.db.models.py.BigAutoField'
 
 # CORS settings for development
 CORS_ALLOW_ALL_ORIGINS = True  # For development only
@@ -152,6 +164,8 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20
 }
 
 # Custom user model

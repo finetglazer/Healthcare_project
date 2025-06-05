@@ -73,7 +73,7 @@ class MedicalDataScraper:
 
     def process_raw_data_to_model(self, raw_data):
         """
-        Convert scraped data to fit our Django models
+        Convert scraped data to fit our Django models.py
         """
         try:
             # Create or update MedicalCondition

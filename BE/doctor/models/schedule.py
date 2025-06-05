@@ -1,4 +1,4 @@
-# Fix: doctor/models/schedule.py
+# Fix: doctor/models.py/schedule.py
 
 from django.db import models
 
