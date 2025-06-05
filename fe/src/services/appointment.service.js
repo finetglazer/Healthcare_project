@@ -1,16 +1,16 @@
 // fe/src/services/appointment.service.js
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8000/api/appointments/';
+// Remove the single API_URL and use specific base URLs
+const BASE_URL = 'http://localhost:8000/api/';
 
-// Maintain consistent configuration with other services
 axios.defaults.withCredentials = true;
 
 const appointmentService = {
-    // Doctor Schedule Management
+    // Doctor Schedule Management (uses /api/doctor/)
     getDoctorSchedules: async () => {
         try {
-            const response = await axios.get(API_URL + 'schedules/');
+            const response = await axios.get(`${BASE_URL}doctor/schedules/`);
             return response.data;
         } catch (error) {
             console.error('Error fetching doctor schedules', error);
@@ -20,7 +20,7 @@ const appointmentService = {
 
     createSchedule: async (scheduleData) => {
         try {
-            const response = await axios.post(API_URL + 'schedules/', scheduleData);
+            const response = await axios.post(`${BASE_URL}doctor/schedules/`, scheduleData);
             return response.data;
         } catch (error) {
             console.error('Error creating schedule', error);
@@ -30,7 +30,7 @@ const appointmentService = {
 
     updateSchedule: async (scheduleId, scheduleData) => {
         try {
-            const response = await axios.put(`${API_URL}schedules/${scheduleId}/`, scheduleData);
+            const response = await axios.put(`${BASE_URL}doctor/schedules/${scheduleId}/`, scheduleData);
             return response.data;
         } catch (error) {
             console.error('Error updating schedule', error);
@@ -40,7 +40,7 @@ const appointmentService = {
 
     deleteSchedule: async (scheduleId) => {
         try {
-            await axios.delete(`${API_URL}schedules/${scheduleId}/`);
+            await axios.delete(`${BASE_URL}doctor/schedules/${scheduleId}/`);
             return true;
         } catch (error) {
             console.error('Error deleting schedule', error);
@@ -48,10 +48,10 @@ const appointmentService = {
         }
     },
 
-    // Patient Booking
+    // Patient Booking (uses /api/patient/)
     getDoctors: async (search = '') => {
         try {
-            const response = await axios.get(`${API_URL}doctors/?search=${search}`);
+            const response = await axios.get(`${BASE_URL}patient/doctors/?search=${search}`);
             return response.data;
         } catch (error) {
             console.error('Error fetching doctors', error);
@@ -59,9 +59,9 @@ const appointmentService = {
         }
     },
 
-    getDoctorSchedules: async (doctorId) => {
+    getDoctorAvailableSchedules: async (doctorId) => {
         try {
-            const response = await axios.get(`${API_URL}doctors/${doctorId}/schedules/`);
+            const response = await axios.get(`${BASE_URL}patient/doctors/${doctorId}/schedules/`);
             return response.data;
         } catch (error) {
             console.error('Error fetching doctor schedules', error);
@@ -71,7 +71,7 @@ const appointmentService = {
 
     bookAppointment: async (bookingData) => {
         try {
-            const response = await axios.post(`${API_URL}book/`, bookingData);
+            const response = await axios.post(`${BASE_URL}patient/book/`, bookingData);
             return response.data;
         } catch (error) {
             console.error('Error booking appointment', error);
@@ -82,7 +82,7 @@ const appointmentService = {
     // Appointment Management
     getPatientAppointments: async () => {
         try {
-            const response = await axios.get(`${API_URL}patient/appointments/`);
+            const response = await axios.get(`${BASE_URL}patient/appointments/`);
             return response.data;
         } catch (error) {
             console.error('Error fetching patient appointments', error);
@@ -92,7 +92,7 @@ const appointmentService = {
 
     getDoctorAppointments: async () => {
         try {
-            const response = await axios.get(`${API_URL}doctor/appointments/`);
+            const response = await axios.get(`${BASE_URL}doctor/appointments/`);
             return response.data;
         } catch (error) {
             console.error('Error fetching doctor appointments', error);
@@ -102,7 +102,7 @@ const appointmentService = {
 
     cancelAppointment: async (appointmentId) => {
         try {
-            const response = await axios.patch(`${API_URL}appointments/${appointmentId}/cancel/`);
+            const response = await axios.patch(`${BASE_URL}patient/appointments/${appointmentId}/cancel/`);
             return response.data;
         } catch (error) {
             console.error('Error canceling appointment', error);

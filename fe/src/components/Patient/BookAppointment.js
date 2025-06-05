@@ -1,5 +1,5 @@
 // fe/src/components/Patient/BookAppointment.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, Form, Button, Row, Col, Alert, Spinner, ListGroup } from 'react-bootstrap';
 import { format, parse, isAfter } from 'date-fns';
@@ -21,17 +21,7 @@ const BookAppointment = () => {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
-    useEffect(() => {
-        fetchDoctorAndSchedules();
-    }, [doctorId]);
-
-    useEffect(() => {
-        if (selectedSchedule) {
-            generateTimeSlots(selectedSchedule);
-        }
-    }, [selectedSchedule]);
-
-    const fetchDoctorAndSchedules = async () => {
+    const fetchDoctorAndSchedules = useCallback(async () => {
         setLoading(true);
         try {
             // In a real implementation, you'd fetch the doctor details
@@ -42,14 +32,24 @@ const BookAppointment = () => {
                 setDoctor(doctorData);
             }
 
-            const schedulesData = await appointmentService.getDoctorSchedules(doctorId);
+            const schedulesData = await appointmentService.getDoctorAvailableSchedules(doctorId);
             setSchedules(schedulesData);
         } catch (err) {
             setError('Failed to load doctor information');
         } finally {
             setLoading(false);
         }
-    };
+    }, [doctorId]);
+
+    useEffect(() => {
+        fetchDoctorAndSchedules();
+    }, [fetchDoctorAndSchedules]);
+
+    useEffect(() => {
+        if (selectedSchedule) {
+            generateTimeSlots(selectedSchedule);
+        }
+    }, [selectedSchedule]);
 
     const generateTimeSlots = (schedule) => {
         const { start_time, end_time, slot_duration } = schedule;
