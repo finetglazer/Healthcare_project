@@ -1,4 +1,5 @@
-# BE/appointments/models.py
+# Fix: doctor/models/schedule.py
+
 from django.db import models
 
 class Schedule(models.Model):
@@ -9,7 +10,7 @@ class Schedule(models.Model):
         (120, '2 hours'),
     )
 
-    doctor = models.ForeignKey('users.Doctor', on_delete=models.CASCADE, related_name='schedules')
+    doctor = models.ForeignKey('shared.Doctor', on_delete=models.CASCADE, related_name='schedules')  # Changed from 'users.Doctor'
     date = models.DateField()
     start_time = models.TimeField()
     end_time = models.TimeField()
@@ -26,8 +27,8 @@ class Appointment(models.Model):
         ('COMPLETED', 'Completed'),
     )
 
-    patient = models.ForeignKey('users.Patient', on_delete=models.CASCADE, related_name='appointments')
-    doctor = models.ForeignKey('users.Doctor', on_delete=models.CASCADE, related_name='appointments')
+    patient = models.ForeignKey('shared.Patient', on_delete=models.CASCADE, related_name='appointments')  # Changed from 'users.Patient'
+    doctor = models.ForeignKey('shared.Doctor', on_delete=models.CASCADE, related_name='appointments')    # Changed from 'users.Doctor'
     schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE, related_name='appointments')
     date = models.DateField()
     time = models.TimeField()
