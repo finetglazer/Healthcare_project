@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+// Import the medical image
+import medicalImage from '../../assets/images/medical-image.jpg';
 
 const HealthcareFooter = () => {
     const [activeKey, setActiveKey] = useState(null);
@@ -126,7 +128,7 @@ const HealthcareFooter = () => {
                         </div>
                     </div>
 
-                    {/* Logo Section */}
+                    {/* Logo Section - Updated with medical image */}
                     <div className="row mt-5">
                         <div className="col text-center">
                             <div className="footer-logo mb-4">
@@ -141,10 +143,28 @@ const HealthcareFooter = () => {
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
-                                            fontSize: '32px'
+                                            overflow: 'hidden',
+                                            border: '3px solid rgba(255, 255, 255, 0.8)',
+                                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
                                         }}
                                     >
-                                        ❤️
+                                        <img
+                                            src={medicalImage}
+                                            alt="HealthCare System Logo"
+                                            style={{
+                                                width: '100%',
+                                                height: '100%',
+                                                objectFit: 'cover',
+                                                objectPosition: 'center'
+                                            }}
+                                            onError={(e) => {
+                                                // Fallback to heart emoji if image fails to load
+                                                e.target.style.display = 'none';
+                                                e.target.parentNode.innerHTML = '❤️';
+                                                e.target.parentNode.style.fontSize = '32px';
+                                                e.target.parentNode.style.color = '#274375';
+                                            }}
+                                        />
                                     </div>
                                     <div className="text-start">
                                         <h3 className="text-white mb-0">HealthCare System</h3>
@@ -203,17 +223,17 @@ const HealthcareFooter = () => {
                     color: white;
                     margin-top: auto;
                 }
-                
+
                 .footer-main {
                     padding: 60px 0 40px;
                 }
-                
+
                 .footer-bottom {
                     background-color: rgba(0, 0, 0, 0.2);
                     padding: 20px 0;
                     border-top: 1px solid rgba(255, 255, 255, 0.1);
                 }
-                
+
                 .footer-link {
                     transition: all 0.3s ease;
                     position: relative;
@@ -221,12 +241,12 @@ const HealthcareFooter = () => {
                     padding: 2px 0;
                     color: #e9ecef !important;
                 }
-                
+
                 .footer-link:hover {
                     color: #87ceeb !important;
                     transform: translateX(5px);
                 }
-                
+
                 .footer-link::before {
                     content: '';
                     position: absolute;
@@ -237,27 +257,27 @@ const HealthcareFooter = () => {
                     background-color: #87ceeb;
                     transition: width 0.3s ease;
                 }
-                
+
                 .footer-link:hover::before {
                     width: 100%;
                 }
-                
+
                 .contact-item {
                     transition: all 0.3s ease;
                     display: flex;
                     align-items: center;
                 }
-                
+
                 .contact-item:hover {
                     transform: translateX(3px);
                 }
-                
+
                 .contact-icon {
                     font-size: 16px;
                     width: 20px;
                     display: inline-block;
                 }
-                
+
                 .footer-btn {
                     transition: all 0.3s ease;
                     border: 2px solid rgba(255, 255, 255, 0.3);
@@ -268,7 +288,7 @@ const HealthcareFooter = () => {
                     border-radius: 4px;
                     color: white;
                 }
-                
+
                 .footer-btn:hover {
                     border-color: #87ceeb;
                     background-color: rgba(135, 206, 235, 0.1);
@@ -277,7 +297,7 @@ const HealthcareFooter = () => {
                     color: #87ceeb;
                     text-decoration: none;
                 }
-                
+
                 .social-link {
                     transition: all 0.3s ease;
                     display: inline-block;
@@ -290,7 +310,7 @@ const HealthcareFooter = () => {
                     text-decoration: none;
                     font-size: 16px;
                 }
-                
+
                 .social-link:hover {
                     color: #87ceeb !important;
                     border-color: #87ceeb;
@@ -298,74 +318,74 @@ const HealthcareFooter = () => {
                     background-color: rgba(135, 206, 235, 0.1);
                     text-decoration: none;
                 }
-                
+
                 .footer-logo {
                     transition: all 0.3s ease;
                 }
-                
+
                 .footer-logo:hover {
                     transform: scale(1.05);
                 }
-                
+
                 .logo-circle {
                     transition: all 0.3s ease;
                 }
-                
+
                 .logo-circle:hover {
                     transform: rotate(360deg);
                 }
-                
+
                 /* Mobile responsiveness */
                 @media (max-width: 767px) {
                     .footer-main {
                         padding: 40px 0 30px;
                     }
-                    
+
                     .footer-section {
                         margin-bottom: 30px;
                     }
-                    
+
                     .footer-section-header button {
                         background: none !important;
                         border: none !important;
                         font-size: 18px;
                         color: white;
                     }
-                    
+
                     .footer-bottom {
                         text-align: center;
                     }
-                    
+
                     .footer-bottom-links {
                         margin-bottom: 20px;
                     }
-                    
+
                     .footer-bottom-links a {
                         display: block;
                         margin-bottom: 10px;
                     }
-                    
+
                     .social-links {
                         margin-bottom: 15px !important;
                     }
-                    
+
                     .d-flex.justify-content-md-end.justify-content-center {
                         flex-direction: column;
                         align-items: center;
                     }
                 }
-                
+
                 /* Hover effects for better UX */
                 .footer-section:hover {
                     transform: translateY(-2px);
                     transition: transform 0.3s ease;
                 }
-                
+
                 .footer-contact:hover {
                     transform: translateY(-2px);
                     transition: transform 0.3s ease;
                 }
-                
+
                 /* Custom animations */
                 @keyframes fadeInUp {
                     from {
@@ -377,16 +397,16 @@ const HealthcareFooter = () => {
                         transform: translateY(0);
                     }
                 }
-                
+
                 .footer-section,
                 .footer-contact {
                     animation: fadeInUp 0.6s ease-out;
                 }
-                
+
                 .footer-contact {
                     animation-delay: 0.2s;
                 }
-                
+
                 /* Accessibility improvements */
                 .footer-link:focus,
                 .footer-btn:focus,
@@ -394,7 +414,7 @@ const HealthcareFooter = () => {
                     outline: 2px solid #87ceeb;
                     outline-offset: 2px;
                 }
-                
+
                 /* Print styles */
                 @media print {
                     .healthcare-footer {

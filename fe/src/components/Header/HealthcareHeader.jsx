@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Navbar, Nav, Container, Dropdown, Button } from 'react-bootstrap';
+// Import the medical image
+import medicalImage from '../../assets/images/medical-image.jpg';
 
 const HealthcareHeader = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -52,7 +54,7 @@ const HealthcareHeader = () => {
                 bg="white"
             >
                 <Container>
-                    {/* Logo */}
+                    {/* Logo - Updated with medical image */}
                     <Navbar.Brand href="#" className="d-flex align-items-center">
                         <div
                             className="d-flex align-items-center justify-content-center me-3"
@@ -61,11 +63,28 @@ const HealthcareHeader = () => {
                                 height: '48px',
                                 background: 'linear-gradient(135deg, #274375, #1e3557)',
                                 borderRadius: '50%',
-                                color: 'white',
-                                fontSize: '24px'
+                                overflow: 'hidden',
+                                border: '2px solid #ffffff',
+                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
                             }}
                         >
-                            ❤️
+                            <img
+                                src={medicalImage}
+                                alt="Medical Logo"
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover',
+                                    objectPosition: 'center'
+                                }}
+                                onError={(e) => {
+                                    // Fallback to heart emoji if image fails to load
+                                    e.target.style.display = 'none';
+                                    e.target.parentNode.innerHTML = '❤️';
+                                    e.target.parentNode.style.fontSize = '24px';
+                                    e.target.parentNode.style.color = 'white';
+                                }}
+                            />
                         </div>
                         <div className="d-none d-sm-block">
                             <h4 className="mb-0 text-primary fw-bold">HealthCare</h4>
