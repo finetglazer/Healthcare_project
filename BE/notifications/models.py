@@ -1,10 +1,10 @@
-# BE/notifications/models.py.py
+# BE/notifications/models.py
 from django.db import models
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 
 
-# Add these functions at the top of the file, before the models
+# Default value functions (must be defined before the models)
 def default_appointment_delivery():
     return ['IN_APP', 'EMAIL']
 
@@ -20,22 +20,11 @@ def default_system_delivery():
 def default_emergency_delivery():
     return ['IN_APP', 'EMAIL', 'SMS', 'PUSH']
 
-# Then in NotificationPreference model, replace:
-# appointment_delivery_methods = models.JSONField(default=lambda: ['IN_APP', 'EMAIL'])
-appointment_delivery_methods = models.JSONField(default=default_appointment_delivery)
+def default_empty_list():
+    return []
 
-# medical_delivery_methods = models.JSONField(default=lambda: ['IN_APP', 'EMAIL'])
-medical_delivery_methods = models.JSONField(default=default_medical_delivery)
-
-# billing_delivery_methods = models.JSONField(default=lambda: ['IN_APP', 'EMAIL'])
-billing_delivery_methods = models.JSONField(default=default_billing_delivery)
-
-# system_delivery_methods = models.JSONField(default=lambda: ['IN_APP'])
-system_delivery_methods = models.JSONField(default=default_system_delivery)
-
-# emergency_delivery_methods = models.JSONField(default=lambda: ['IN_APP', 'EMAIL', 'SMS', 'PUSH'])
-emergency_delivery_methods = models.JSONField(default=default_emergency_delivery)
-
+def default_empty_dict():
+    return {}
 
 
 class Notification(models.Model):
@@ -100,7 +89,7 @@ class Notification(models.Model):
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    metadata = models.JSONField(default=dict, blank=True, help_text="Additional data for notification")
+    metadata = models.JSONField(default=default_empty_dict, blank=True, help_text="Additional data for notification")
 
     def __str__(self):
         return f"{self.notification_type} - {self.title} to {self.recipient.get_full_name()}"
@@ -151,7 +140,7 @@ class NotificationTemplate(models.Model):
 
     # Delivery Settings
     delivery_methods = models.JSONField(
-        default=list,
+        default=default_empty_list,
         help_text="List of delivery methods: ['IN_APP', 'EMAIL', 'SMS']"
     )
     send_immediately = models.BooleanField(default=True)
@@ -159,7 +148,7 @@ class NotificationTemplate(models.Model):
 
     # Template variables documentation
     available_variables = models.JSONField(
-        default=list,
+        default=default_empty_list,
         help_text="List of available variables for this template"
     )
 
@@ -181,27 +170,27 @@ class NotificationPreference(models.Model):
     appointment_reminders = models.BooleanField(default=True)
     appointment_confirmations = models.BooleanField(default=True)
     appointment_cancellations = models.BooleanField(default=True)
-    appointment_delivery_methods = models.JSONField(default=lambda: ['IN_APP', 'EMAIL'])
+    appointment_delivery_methods = models.JSONField(default=default_appointment_delivery)
 
     # Medical Notifications
     lab_results = models.BooleanField(default=True)
     prescription_ready = models.BooleanField(default=True)
     medication_reminders = models.BooleanField(default=True)
-    medical_delivery_methods = models.JSONField(default=lambda: ['IN_APP', 'EMAIL'])
+    medical_delivery_methods = models.JSONField(default=default_medical_delivery)
 
     # Billing Notifications
     billing_notifications = models.BooleanField(default=True)
     payment_confirmations = models.BooleanField(default=True)
-    billing_delivery_methods = models.JSONField(default=lambda: ['IN_APP', 'EMAIL'])
+    billing_delivery_methods = models.JSONField(default=default_billing_delivery)
 
     # System Notifications
     system_updates = models.BooleanField(default=True)
     security_alerts = models.BooleanField(default=True)
-    system_delivery_methods = models.JSONField(default=lambda: ['IN_APP'])
+    system_delivery_methods = models.JSONField(default=default_system_delivery)
 
     # Emergency Notifications (cannot be disabled)
     emergency_alerts = models.BooleanField(default=True, editable=False)
-    emergency_delivery_methods = models.JSONField(default=lambda: ['IN_APP', 'EMAIL', 'SMS', 'PUSH'])
+    emergency_delivery_methods = models.JSONField(default=default_emergency_delivery)
 
     # General Settings
     do_not_disturb_start = models.TimeField(null=True, blank=True, help_text="Start of quiet hours")

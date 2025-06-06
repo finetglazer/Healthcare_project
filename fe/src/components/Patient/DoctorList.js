@@ -1,4 +1,4 @@
-// Updated Find Doctors Page with Chatbot Integration
+// Updated Find Doctors Page with Bug Fix
 // fe/src/components/Patient/DoctorList.js (Fixed)
 
 import React, { useState, useEffect } from 'react';
@@ -6,11 +6,9 @@ import { Card, Row, Col, Form, InputGroup, Button, Spinner, Badge } from 'react-
 import { Search, Robot, PersonFill } from 'react-bootstrap-icons';
 import { useNavigate } from 'react-router-dom';
 import appointmentService from '../../services/appointment.service';
-import medicalImage from '../../assets/images/medical-image.jpg'; // Placeholder for medical image
-
 
 const DoctorList = () => {
-    const [doctors, setDoctors] = useState([]);
+    const [doctors, setDoctors] = useState([]); // Ensure initial state is array
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [showChatbotPrompt, setShowChatbotPrompt] = useState(true);
@@ -24,9 +22,12 @@ const DoctorList = () => {
         setLoading(true);
         try {
             const data = await appointmentService.getDoctors(search);
-            setDoctors(data);
+            // Safety check: ensure data is an array
+            setDoctors(Array.isArray(data) ? data : []);
         } catch (err) {
             console.error('Error fetching doctors', err);
+            // Set to empty array on error
+            setDoctors([]);
         } finally {
             setLoading(false);
         }
@@ -55,25 +56,17 @@ const DoctorList = () => {
                                 width: '80px',
                                 height: '80px',
                                 borderRadius: '50%',
-                                overflow: 'hidden'
+                                backgroundColor: '#f8f9fa',
+                                fontSize: '32px'
                             }}
                         >
-                            <img
-                                src={medicalImage}
-                                alt="Medical"
-                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                            />
+                            🤖
                         </div>
                     </Col>
                     <Col md={7}>
                         <div>
                             <h5 className="text-primary mb-2">
-                                <img
-                                    src={medicalImage}
-                                    alt="Medical"
-                                    style={{ width: '24px', height: '24px', marginRight: '8px' }}
-                                />
-                                Need Help Choosing the Right Doctor?
+                                🤖 Need Help Choosing the Right Doctor?
                             </h5>
                             <p className="mb-2 text-muted">
                                 Before browsing doctors, let our medical assistant help you identify your
@@ -97,12 +90,7 @@ const DoctorList = () => {
                                 onClick={() => navigate('/symptom-checker')}
                                 className="mb-2"
                             >
-                                <img
-                                    src={medicalImage}
-                                    alt="Medical"
-                                    style={{ width: '20px', height: '20px', marginRight: '8px' }}
-                                />
-                                Start Assessment
+                                🤖 Start Assessment
                             </Button>
                             <Button
                                 variant="outline-secondary"
@@ -183,7 +171,8 @@ const DoctorList = () => {
                             </Card>
                         </Col>
                     ) : (
-                        doctors.map((doctor) => (
+                        // Safety check: ensure doctors is array before mapping
+                        (Array.isArray(doctors) ? doctors : []).map((doctor) => (
                             <Col key={doctor.id} md={6} lg={4} className="mb-4">
                                 <Card className="h-100 shadow-sm hover-card">
                                     <Card.Body>
@@ -202,10 +191,10 @@ const DoctorList = () => {
                                             </div>
                                             <div className="flex-grow-1">
                                                 <Card.Title className="mb-1">
-                                                    Dr. {doctor.user.first_name} {doctor.user.last_name}
+                                                    Dr. {doctor.user?.first_name || 'Unknown'} {doctor.user?.last_name || ''}
                                                 </Card.Title>
                                                 <Card.Subtitle className="mb-2 text-muted">
-                                                    {doctor.specialization}
+                                                    {doctor.specialization || 'General Practice'}
                                                 </Card.Subtitle>
                                             </div>
                                         </div>
@@ -240,12 +229,7 @@ const DoctorList = () => {
                             size="sm"
                             onClick={() => navigate('/symptom-checker')}
                         >
-                            <img
-                                src={medicalImage}
-                                alt="Medical"
-                                style={{ width: '20px', height: '20px', marginRight: '8px' }}
-                            />
-                            Get Personalized Recommendations
+                            🤖 Get Personalized Recommendations
                         </Button>
                     </Card.Body>
                 </Card>
@@ -253,7 +237,5 @@ const DoctorList = () => {
         </div>
     );
 };
-
-
 
 export default DoctorList;
