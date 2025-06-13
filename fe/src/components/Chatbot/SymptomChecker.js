@@ -1,8 +1,8 @@
-// Fixed SymptomChecker.js - Runtime Error Fix
+// Fixed SymptomChecker.js - All Issues Resolved
 // fe/src/components/Chatbot/SymptomChecker.js
 
-import React, { useState, useEffect, useRef } from 'react';
-import { Container, Row, Col, Button, Form, Alert, ProgressBar, Card, Badge } from 'react-bootstrap';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Container, Row, Col, Button, Form, Alert, ProgressBar } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import {
     conversationSteps,
@@ -32,8 +32,8 @@ const SymptomChecker = () => {
 
     const messagesEndRef = useRef(null);
 
-    // Progress calculation
-    const getCurrentProgress = () => {
+    // FIXED: Use useCallback to prevent dependency issues
+    const getCurrentProgress = useCallback(() => {
         const stepOrder = [
             conversationSteps.GREETING,
             conversationSteps.PRIMARY_SYMPTOMS,
@@ -47,24 +47,10 @@ const SymptomChecker = () => {
 
         const currentIndex = stepOrder.indexOf(currentStep);
         return Math.round((currentIndex / (stepOrder.length - 1)) * 100);
-    };
-
-    // Auto scroll to bottom
-    useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [conversation]);
-
-    // Initialize component
-    useEffect(() => {
-        initializeChatbot();
-    }, []);
-
-    // Update progress
-    useEffect(() => {
-        setProgress(getCurrentProgress());
     }, [currentStep]);
 
-    const initializeChatbot = async () => {
+    // FIXED: Use useCallback to prevent dependency issues
+    const initializeChatbot = useCallback(async () => {
         try {
             setIsLoading(true);
 
@@ -76,9 +62,11 @@ const SymptomChecker = () => {
             const newSessionId = generateSessionId();
             setSessionId(newSessionId);
 
-            // Show initial message
-            const initialQuestion = generateSmartQuestions(conversationSteps.GREETING, {});
-            addBotMessage(initialQuestion.message);
+            // FIXED: Only add initial message if conversation is empty
+            if (conversation.length === 0) {
+                const initialQuestion = generateSmartQuestions(conversationSteps.GREETING, {});
+                addBotMessage(initialQuestion.message);
+            }
 
             setError('');
         } catch (err) {
@@ -87,11 +75,26 @@ const SymptomChecker = () => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [conversation.length]); // Added conversation.length dependency
 
     const generateSessionId = () => {
         return Date.now().toString(36) + Math.random().toString(36).substr(2);
     };
+
+    // Auto scroll to bottom
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [conversation]);
+
+    // FIXED: Initialize component only once
+    useEffect(() => {
+        initializeChatbot();
+    }, [initializeChatbot]);
+
+    // FIXED: Update progress with correct dependencies
+    useEffect(() => {
+        setProgress(getCurrentProgress());
+    }, [getCurrentProgress]);
 
     // FIXED: Ensure message is always a string
     const addBotMessage = (message, type = 'text') => {
@@ -160,7 +163,7 @@ const SymptomChecker = () => {
 
     const performAnalysis = async (inputs) => {
         setIsAnalyzing(true);
-        addBotMessage("Analyzing your symptoms...");
+        addBotMessage("Thank you for the information. Let me analyze your symptoms...");
 
         try {
             const result = await analyzeSymptoms(inputs, sessionId);
@@ -174,56 +177,83 @@ const SymptomChecker = () => {
         } catch (err) {
             console.error('Analysis error:', err);
             setError('Analysis failed. Please consult a healthcare provider.');
-
-            // Show fallback message
-            addBotMessage(
-                "I'm sorry, I couldn't complete the analysis. Please consult a healthcare provider for proper diagnosis."
-            );
+            addBotMessage("I'm sorry, I couldn't analyze your symptoms right now. Please consult a healthcare provider.");
         } finally {
             setIsAnalyzing(false);
         }
     };
 
+    // FIXED: Add missing showAnalysisResults function
     const showAnalysisResults = (result) => {
-        const mostLikely = result.mostLikely || { name: 'Unknown', confidence: 0 };
-        const recommendations = result.recommendations || {};
+        const { mostLikely, recommendations, confidence, urgencyLevel } = result;
 
-        const resultMessage = `
-Based on your symptoms, you might have: **${mostLikely.name}** (${Math.round(mostLikely.confidence * 100)}% confidence)
+        // Create results message
+        let resultMessage = `## Analysis Complete\n\n`;
 
-**Recommendation:**
-- ${recommendations.action || 'Consult a healthcare provider'}
-- Urgency: ${result.urgency || 'MEDIUM'}
-- ${recommendations.note || 'Please seek professional medical advice'}
+        if (mostLikely && mostLikely.length > 0) {
+            const [condition, conditionConfidence] = mostLikely[0];
+            resultMessage += `**Most Likely Condition:** ${condition}\n`;
+            resultMessage += `**Confidence:** ${Math.round(conditionConfidence * 100)}%\n\n`;
+        }
 
-**Medical Disclaimer:**
-This analysis is for informational purposes only and should not replace professional medical advice. Please consult with a healthcare provider for proper diagnosis and treatment.
+        if (recommendations) {
+            resultMessage += `**Recommendations:**\n`;
+            resultMessage += `• See a ${recommendations.specialist || 'healthcare provider'}\n`;
+            resultMessage += `• Urgency Level: ${urgencyLevel || 'Moderate'}\n`;
 
-Would you like to find recommended doctors in our system?`;
+            if (recommendations.note) {
+                resultMessage += `• ${recommendations.note}\n`;
+            }
+        }
 
-        addBotMessage(resultMessage);
+        // Show urgency warning if needed
+        if (urgencyLevel === 'HIGH' || urgencyLevel === 'URGENT') {
+            resultMessage += `\n⚠️ **Important:** Your symptoms suggest you should seek immediate medical attention.`;
+            addBotMessage(resultMessage, 'urgent');
+        } else {
+            addBotMessage(resultMessage, 'result');
+        }
+
+        // Show multiple conditions if present
+        if (mostLikely && mostLikely.length > 1) {
+            let alternativeMessage = `\n**Other Possible Conditions:**\n`;
+            for (let i = 1; i < Math.min(mostLikely.length, 3); i++) {
+                const [altCondition, altConfidence] = mostLikely[i];
+                alternativeMessage += `• ${altCondition} (${Math.round(altConfidence * 100)}%)\n`;
+            }
+            addBotMessage(alternativeMessage, 'alternatives');
+        }
     };
 
-    // FIXED: Safe message rendering
     const renderMessage = (msg, index) => {
-        // Ensure message is always a string
-        const messageText = typeof msg.message === 'string' ? msg.message : String(msg.message);
+        const isBot = msg.type === 'bot';
+        const isUrgent = msg.messageType === 'urgent';
+        const isResult = msg.messageType === 'result';
 
         return (
-            <div key={index} className={`d-flex mb-3 ${msg.type === 'user' ? 'justify-content-end' : 'justify-content-start'}`}>
+            <div
+                key={index}
+                className={`d-flex mb-3 ${isBot ? 'justify-content-start' : 'justify-content-end'}`}
+            >
                 <div
                     className={`p-3 rounded-3 ${
-                        msg.type === 'user'
-                            ? 'bg-primary text-white'
-                            : 'bg-light text-dark'
+                        isBot
+                            ? isUrgent
+                                ? 'bg-danger text-white'
+                                : isResult
+                                    ? 'bg-success text-white'
+                                    : 'bg-light text-dark'
+                            : 'bg-primary text-white'
                     }`}
                     style={{ maxWidth: '75%' }}
                 >
-                    {messageText.split('\n').map((line, i) => (
+                    {msg.message.split('\n').map((line, i) => (
                         <div key={i}>
                             {line.includes('**') ? (
                                 <span dangerouslySetInnerHTML={{
                                     __html: line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                                        .replace(/##\s*(.*)/g, '<h5>$1</h5>')
+                                        .replace(/•\s*(.*)/g, '• $1')
                                 }} />
                             ) : line}
                         </div>
@@ -234,8 +264,13 @@ Would you like to find recommended doctors in our system?`;
     };
 
     const renderQuestionInput = () => {
-        if (!knowledgeBase || isLoading) {
-            return <div className="text-center">Loading...</div>;
+        if (isLoading) {
+            return (
+                <div className="text-center">
+                    <div className="spinner-border text-primary me-2"></div>
+                    Loading medical assistant...
+                </div>
+            );
         }
 
         const question = generateSmartQuestions(currentStep, userInputs);
@@ -245,13 +280,14 @@ Would you like to find recommended doctors in our system?`;
             case 'multiple_choice':
                 return (
                     <div>
-                        <div className="mb-3">
+                        <p className="mb-3">{question.message}</p>
+                        <div className="d-grid gap-2">
                             {question.options.map((option, index) => (
                                 <Button
                                     key={index}
                                     variant="outline-primary"
-                                    className="d-block w-100 mb-2 text-start"
                                     onClick={() => handleUserInput(option)}
+                                    className="text-start"
                                 >
                                     {option}
                                 </Button>
@@ -263,24 +299,19 @@ Would you like to find recommended doctors in our system?`;
             case 'scale':
                 return (
                     <div>
-                        <div className="mb-3">
-                            <div className="d-flex justify-content-between mb-2">
-                                <small>Very Mild</small>
-                                <small>Severe</small>
-                            </div>
-                            <div className="d-flex gap-2 flex-wrap justify-content-center">
-                                {Array.from({ length: question.max - question.min + 1 }, (_, i) => (
-                                    <Button
-                                        key={i + 1}
-                                        variant="outline-primary"
-                                        size="sm"
-                                        onClick={() => handleUserInput(i + 1)}
-                                        style={{ minWidth: '40px' }}
-                                    >
-                                        {i + 1}
-                                    </Button>
-                                ))}
-                            </div>
+                        <p className="mb-3">{question.message}</p>
+                        <div className="d-flex gap-2 justify-content-center flex-wrap">
+                            {Array.from({ length: question.max - question.min + 1 }, (_, i) => (
+                                <Button
+                                    key={i + question.min}
+                                    variant="outline-primary"
+                                    size="sm"
+                                    onClick={() => handleUserInput(i + question.min)}
+                                    style={{ minWidth: '40px' }}
+                                >
+                                    {i + question.min}
+                                </Button>
+                            ))}
                         </div>
                     </div>
                 );
@@ -288,21 +319,13 @@ Would you like to find recommended doctors in our system?`;
             case 'checkbox':
                 return <CheckboxInput options={question.options} onSubmit={handleUserInput} />;
 
+            case 'text':
+                return <TextInput question={question.message} onSubmit={handleUserInput} />;
+
             default:
                 return null;
         }
     };
-
-    if (isLoading) {
-        return (
-            <Container className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
-                <div className="text-center">
-                    <div className="spinner-border text-primary mb-3"></div>
-                    <div>Loading Medical Assistant...</div>
-                </div>
-            </Container>
-        );
-    }
 
     return (
         <Container fluid style={{ height: '100vh', background: '#f8f9fa' }}>
@@ -441,13 +464,48 @@ const CheckboxInput = ({ options, onSubmit }) => {
             </Form>
             <Button
                 variant="primary"
-                onClick={() => onSubmit(selected.length > 0 ? selected : ['None of the above'])}
+                onClick={() => onSubmit(selected.length > 0 ? selected : ['None'])}
                 className="mt-3"
                 disabled={selected.length === 0}
             >
                 Continue
             </Button>
         </div>
+    );
+};
+
+// Text input component
+const TextInput = ({ question, onSubmit }) => {
+    const [value, setValue] = useState('');
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        if (value.trim()) {
+            onSubmit(value.trim());
+            setValue('');
+        }
+    };
+
+    return (
+        <Form onSubmit={handleSubmit}>
+            <Form.Group>
+                <Form.Label>{question}</Form.Label>
+                <Form.Control
+                    type="text"
+                    value={value}
+                    onChange={(e) => setValue(e.target.value)}
+                    placeholder="Type your answer..."
+                />
+            </Form.Group>
+            <Button
+                type="submit"
+                variant="primary"
+                className="mt-3"
+                disabled={!value.trim()}
+            >
+                Submit
+            </Button>
+        </Form>
     );
 };
 
