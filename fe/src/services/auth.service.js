@@ -1,7 +1,8 @@
 // fe/src/services/auth.service.js
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8000/api/users/';
+// In fe/src/services/auth.service.js
+const API_URL = 'http://localhost:8000/api/auth/'; // Change from 'users' to 'auth'
 
 // Add cookies support for session authentication
 axios.defaults.withCredentials = true;

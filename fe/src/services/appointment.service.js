@@ -49,10 +49,11 @@ const appointmentService = {
     },
 
     // Patient Booking (uses /api/patient/)
+    // In fe/src/services/appointment.service.js
     getDoctors: async (search = '') => {
         try {
             const response = await axios.get(`${BASE_URL}patient/doctors/?search=${search}`);
-            return response.data;
+            return response.data.results; // Return only the results array
         } catch (error) {
             console.error('Error fetching doctors', error);
             return [];

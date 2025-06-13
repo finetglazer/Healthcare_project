@@ -9,6 +9,7 @@ from doctor.models.schedule import Schedule, Appointment
 # Change this line:
 from ..serializers.appointment import ScheduleSerializer, AppointmentSerializer
 from rest_framework import serializers
+from rest_framework.permissions import AllowAny
 
 # Get models.py dynamically to avoid import issues
 def get_user_models():
@@ -55,9 +56,11 @@ class DoctorScheduleDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 # Patient Appointment Booking
 class DoctorListView(generics.ListAPIView):
+    permission_classes = [AllowAny]
     serializer_class = DoctorWithUserSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ['specialization', 'user__first_name', 'user__last_name']
+    ordering = ['id']  # Add this line
 
     def get_queryset(self):
         User, Doctor, Patient = get_user_models()

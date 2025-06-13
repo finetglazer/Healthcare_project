@@ -9,6 +9,8 @@ from ..models.schedule import Schedule, Appointment
 # Change this line:
 from ..serializers.schedule import ScheduleSerializer, AppointmentSerializer
 from rest_framework import serializers
+from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticated
 
 # Get models.py dynamically to avoid import issues
 def get_user_models():
@@ -19,7 +21,10 @@ def get_user_models():
 
 
 class UserSerializer(serializers.ModelSerializer):
-    class Meta:
+    permission_classes = [AllowAny]  # Add this line
+
+
+class Meta:
         model = apps.get_model('shared', 'User')  # Changed from 'users'
         fields = ('id', 'username', 'email', 'first_name', 'last_name', 'phone_number', 'is_doctor', 'is_patient')
 
@@ -33,14 +38,21 @@ class DoctorWithUserSerializer(serializers.ModelSerializer):
 
 # Doctor Schedule Management
 class DoctorScheduleListCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]  # Add this line
     serializer_class = ScheduleSerializer
 
     def get_queryset(self):
-        if self.request.user.is_doctor:
+        if self.request.user.is_authenticated and self.request.user.is_doctor:
             return Schedule.objects.filter(doctor__user=self.request.user)
         return Schedule.objects.none()
 
     def perform_create(self, serializer):
+        # Check if user is authenticated and is a doctor
+        if not self.request.user.is_authenticated:
+            raise PermissionError("Authentication required")
+        if not self.request.user.is_doctor:
+            raise PermissionError("Only doctors can create schedules")
+
         # Get the doctor instance associated with the current user
         User, Doctor, Patient = get_user_models()
         doctor = Doctor.objects.get(user=self.request.user)
@@ -56,9 +68,11 @@ class DoctorScheduleDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 # Patient Appointment Booking
 class DoctorListView(generics.ListAPIView):
+    permission_classes = [AllowAny]  # Add this line
     serializer_class = DoctorWithUserSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ['specialization', 'user__first_name', 'user__last_name']
+
 
     def get_queryset(self):
         User, Doctor, Patient = get_user_models()
