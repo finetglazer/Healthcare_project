@@ -15,6 +15,7 @@ from ..serializers.chatbot import (
 )
 import logging
 import json
+from rest_framework.permissions import AllowAny
 
 # Import timezone if not already imported
 from django.utils import timezone
@@ -26,6 +27,7 @@ class ChatbotAnalysisView(APIView):
     """
     Enhanced chatbot analysis endpoint with progressive symptom collection
     """
+    permission_classes = [AllowAny]  # Add this line
 
     def __init__(self):
         super().__init__()
@@ -170,6 +172,8 @@ class KnowledgeBaseView(APIView):
     Serve knowledge base data for chatbot
     """
 
+    permission_classes = [AllowAny]  # Add this line
+
     @method_decorator(cache_page(60 * 15))  # Cache for 15 minutes
     def get(self, request):
         """
@@ -273,6 +277,8 @@ class SymptomValidationView(APIView):
     """
     Validate and normalize symptom inputs
     """
+
+    permission_classes = [AllowAny]  # Add this line
 
     def post(self, request):
         """
