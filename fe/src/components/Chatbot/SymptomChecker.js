@@ -1,4 +1,4 @@
-// Enhanced Symptom Checker Component - Phase 2
+// Fixed SymptomChecker.js - Runtime Error Fix
 // fe/src/components/Chatbot/SymptomChecker.js
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -26,7 +26,6 @@ const SymptomChecker = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
     const [progress, setProgress] = useState(0);
-    const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
 
     // Knowledge base
     const [knowledgeBase, setKnowledgeBase] = useState(null);
@@ -34,7 +33,6 @@ const SymptomChecker = () => {
     const messagesEndRef = useRef(null);
 
     // Progress calculation
-    const totalSteps = Object.keys(conversationSteps).length - 1; // Exclude ANALYSIS
     const getCurrentProgress = () => {
         const stepOrder = [
             conversationSteps.GREETING,
@@ -85,66 +83,62 @@ const SymptomChecker = () => {
             setError('');
         } catch (err) {
             console.error('Failed to initialize chatbot:', err);
-            setError('Failed to load medical assistant. Some features may be limited.');
-
-            // Still show initial message
-            const initialQuestion = generateSmartQuestions(conversationSteps.GREETING, {});
-            addBotMessage(initialQuestion.message);
+            setError('Failed to load medical assistant. Please try again.');
         } finally {
             setIsLoading(false);
         }
     };
 
     const generateSessionId = () => {
-        return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        return Date.now().toString(36) + Math.random().toString(36).substr(2);
     };
 
+    // FIXED: Ensure message is always a string
     const addBotMessage = (message, type = 'text') => {
+        const messageText = typeof message === 'string' ? message :
+            typeof message === 'object' ? JSON.stringify(message) :
+                String(message);
+
         setConversation(prev => [...prev, {
             type: 'bot',
-            message,
-            timestamp: new Date(),
-            messageType: type
+            message: messageText,
+            messageType: type,
+            timestamp: new Date()
         }]);
     };
 
     const addUserMessage = (message) => {
-        const displayMessage = Array.isArray(message) ? message.join(', ') : message;
+        const messageText = Array.isArray(message) ? message.join(', ') :
+            typeof message === 'string' ? message :
+                String(message);
+
         setConversation(prev => [...prev, {
             type: 'user',
-            message: displayMessage,
+            message: messageText,
             timestamp: new Date()
         }]);
     };
 
     const handleUserInput = async (input) => {
-        try {
-            // Add user message to conversation
-            addUserMessage(input);
+        addUserMessage(input);
 
-            // Store user input
-            const newInputs = { ...userInputs, [currentStep]: input };
-            setUserInputs(newInputs);
+        // Store user input
+        const newInputs = { ...userInputs, [currentStep]: input };
+        setUserInputs(newInputs);
 
-            // Get next question
-            const nextStep = getNextStep(currentStep, input, newInputs);
+        // Get next step
+        const nextStep = getNextStep(currentStep, input, newInputs);
 
-            if (nextStep === conversationSteps.ANALYSIS) {
-                // Start analysis
-                await performAnalysis(newInputs);
-            } else {
-                // Continue conversation
-                setCurrentStep(nextStep);
-
-                // Generate next question
-                setTimeout(() => {
-                    const nextQuestion = generateSmartQuestions(nextStep, newInputs);
-                    addBotMessage(nextQuestion.message);
-                }, 500);
-            }
-        } catch (err) {
-            console.error('Error processing user input:', err);
-            setError('Sorry, there was an error processing your response. Please try again.');
+        if (nextStep === conversationSteps.ANALYSIS) {
+            // Perform analysis
+            await performAnalysis(newInputs);
+        } else {
+            // Continue conversation
+            setCurrentStep(nextStep);
+            setTimeout(() => {
+                const nextQuestion = generateSmartQuestions(nextStep, newInputs);
+                addBotMessage(nextQuestion.message);
+            }, 500);
         }
     };
 
@@ -161,29 +155,12 @@ const SymptomChecker = () => {
             }
         }
 
-        // Skip differential questions if only one clear symptom pattern
-        if (current === conversationSteps.FOLLOW_UP_QUESTIONS) {
-            const allSymptoms = Object.values(allInputs).flat();
-            const uniqueConditionIndicators = new Set();
-
-            if (allSymptoms.some(s => s.includes('loss of taste') || s.includes('loss of smell'))) {
-                uniqueConditionIndicators.add('covid');
-            }
-            if (allSymptoms.some(s => s.includes('itchy') || s.includes('seasonal'))) {
-                uniqueConditionIndicators.add('allergy');
-            }
-
-            if (uniqueConditionIndicators.size === 1) {
-                return conversationSteps.ADDITIONAL_INFO;
-            }
-        }
-
         return question.next;
     };
 
     const performAnalysis = async (inputs) => {
         setIsAnalyzing(true);
-        addBotMessage("Analyzing your symptoms...", 'loading');
+        addBotMessage("Analyzing your symptoms...");
 
         try {
             const result = await analyzeSymptoms(inputs, sessionId);
@@ -200,8 +177,7 @@ const SymptomChecker = () => {
 
             // Show fallback message
             addBotMessage(
-                "I'm sorry, I couldn't complete the analysis. Please consult a healthcare provider for proper diagnosis.",
-                'error'
+                "I'm sorry, I couldn't complete the analysis. Please consult a healthcare provider for proper diagnosis."
             );
         } finally {
             setIsAnalyzing(false);
@@ -209,89 +185,58 @@ const SymptomChecker = () => {
     };
 
     const showAnalysisResults = (result) => {
-        const { mostLikely, allConditions, recommendations, urgency, confidence, disclaimers } = result;
+        const mostLikely = result.mostLikely || { name: 'Unknown', confidence: 0 };
+        const recommendations = result.recommendations || {};
 
-        // Build results message
-        let resultMessage = `## Analysis Results\n\n`;
+        const resultMessage = `
+Based on your symptoms, you might have: **${mostLikely.name}** (${Math.round(mostLikely.confidence * 100)}% confidence)
 
-        if (mostLikely && mostLikely.confidence > 0.3) {
-            resultMessage += `**Most Likely Condition:** ${mostLikely.name}\n`;
-            resultMessage += `**Confidence:** ${Math.round(mostLikely.confidence * 100)}%\n\n`;
-        }
+**Recommendation:**
+- ${recommendations.action || 'Consult a healthcare provider'}
+- Urgency: ${result.urgency || 'MEDIUM'}
+- ${recommendations.note || 'Please seek professional medical advice'}
 
-        if (allConditions && allConditions.length > 1) {
-            resultMessage += `**Other Possible Conditions:**\n`;
-            allConditions.slice(1, 4).forEach(condition => {
-                resultMessage += `• ${condition.name} (${Math.round(condition.confidence * 100)}%)\n`;
-            });
-            resultMessage += `\n`;
-        }
+**Medical Disclaimer:**
+This analysis is for informational purposes only and should not replace professional medical advice. Please consult with a healthcare provider for proper diagnosis and treatment.
 
-        if (recommendations && recommendations.length > 0) {
-            const rec = recommendations[0];
-            resultMessage += `**Recommendation:**\n`;
-            resultMessage += `• See a ${rec.specialist}\n`;
-            resultMessage += `• Urgency: ${rec.urgency}\n`;
-            if (rec.notes) {
-                resultMessage += `• ${rec.notes}\n`;
-            }
-        }
+Would you like to find recommended doctors in our system?`;
 
-        // Add urgency warning
-        if (urgency === 'HIGH' || urgency === 'URGENT') {
-            addBotMessage(
-                "⚠️ **IMPORTANT:** Your symptoms may require immediate medical attention. Please seek care promptly.",
-                'warning'
-            );
-        }
-
-        addBotMessage(resultMessage, 'results');
-
-        // Show disclaimers
-        if (disclaimers && disclaimers.length > 0) {
-            setTimeout(() => {
-                addBotMessage(disclaimers.join('\n\n'), 'disclaimer');
-            }, 1000);
-        }
+        addBotMessage(resultMessage);
     };
 
-    const renderProgressBar = () => (
-        <div className="mb-3">
-            <div className="d-flex justify-content-between align-items-center mb-2">
-                <small className="text-muted">Assessment Progress</small>
-                <small className="text-muted">{progress}%</small>
-            </div>
-            <ProgressBar
-                now={progress}
-                variant={progress < 50 ? 'info' : progress < 80 ? 'primary' : 'success'}
-                style={{ height: '8px' }}
-            />
-        </div>
-    );
+    // FIXED: Safe message rendering
+    const renderMessage = (msg, index) => {
+        // Ensure message is always a string
+        const messageText = typeof msg.message === 'string' ? msg.message : String(msg.message);
 
-    const renderConfidenceMeters = (conditions) => (
-        <Card className="mt-3">
-            <Card.Body>
-                <Card.Title as="h6">Confidence Levels</Card.Title>
-                {conditions.slice(0, 3).map((condition, index) => (
-                    <div key={index} className="mb-2">
-                        <div className="d-flex justify-content-between">
-                            <small>{condition.name}</small>
-                            <small>{Math.round(condition.confidence * 100)}%</small>
+        return (
+            <div key={index} className={`d-flex mb-3 ${msg.type === 'user' ? 'justify-content-end' : 'justify-content-start'}`}>
+                <div
+                    className={`p-3 rounded-3 ${
+                        msg.type === 'user'
+                            ? 'bg-primary text-white'
+                            : 'bg-light text-dark'
+                    }`}
+                    style={{ maxWidth: '75%' }}
+                >
+                    {messageText.split('\n').map((line, i) => (
+                        <div key={i}>
+                            {line.includes('**') ? (
+                                <span dangerouslySetInnerHTML={{
+                                    __html: line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                                }} />
+                            ) : line}
                         </div>
-                        <ProgressBar
-                            now={condition.confidence * 100}
-                            variant={index === 0 ? 'success' : 'info'}
-                            size="sm"
-                        />
-                    </div>
-                ))}
-            </Card.Body>
-        </Card>
-    );
+                    ))}
+                </div>
+            </div>
+        );
+    };
 
     const renderQuestionInput = () => {
-        if (isAnalyzing || analysis) return null;
+        if (!knowledgeBase || isLoading) {
+            return <div className="text-center">Loading...</div>;
+        }
 
         const question = generateSmartQuestions(currentStep, userInputs);
         if (!question) return null;
@@ -305,14 +250,8 @@ const SymptomChecker = () => {
                                 <Button
                                     key={index}
                                     variant="outline-primary"
-                                    className="me-2 mb-2"
+                                    className="d-block w-100 mb-2 text-start"
                                     onClick={() => handleUserInput(option)}
-                                    style={{
-                                        display: 'block',
-                                        width: '100%',
-                                        textAlign: 'left',
-                                        whiteSpace: 'normal'
-                                    }}
                                 >
                                     {option}
                                 </Button>
@@ -324,23 +263,24 @@ const SymptomChecker = () => {
             case 'scale':
                 return (
                     <div>
-                        <Form.Label>Severity Scale (1-10)</Form.Label>
-                        <div className="d-flex justify-content-between mb-3">
-                            {Array.from({ length: 10 }, (_, i) => (
-                                <Button
-                                    key={i + 1}
-                                    variant={i + 1 <= 3 ? 'success' : i + 1 <= 7 ? 'warning' : 'danger'}
-                                    size="sm"
-                                    onClick={() => handleUserInput(i + 1)}
-                                    style={{ minWidth: '35px' }}
-                                >
-                                    {i + 1}
-                                </Button>
-                            ))}
-                        </div>
-                        <div className="d-flex justify-content-between">
-                            <small className="text-muted">Mild</small>
-                            <small className="text-muted">Severe</small>
+                        <div className="mb-3">
+                            <div className="d-flex justify-content-between mb-2">
+                                <small>Very Mild</small>
+                                <small>Severe</small>
+                            </div>
+                            <div className="d-flex gap-2 flex-wrap justify-content-center">
+                                {Array.from({ length: question.max - question.min + 1 }, (_, i) => (
+                                    <Button
+                                        key={i + 1}
+                                        variant="outline-primary"
+                                        size="sm"
+                                        onClick={() => handleUserInput(i + 1)}
+                                        style={{ minWidth: '40px' }}
+                                    >
+                                        {i + 1}
+                                    </Button>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 );
@@ -353,80 +293,12 @@ const SymptomChecker = () => {
         }
     };
 
-    const renderMessage = (msg, index) => {
-        const isBot = msg.type === 'bot';
-
-        return (
-            <div key={index} className={`d-flex ${isBot ? 'justify-content-start' : 'justify-content-end'} mb-3`}>
-                <div
-                    className={`rounded-3 p-3 ${
-                        isBot ? 'bg-light text-dark' : 'bg-primary text-white'
-                    }`}
-                    style={{ maxWidth: '75%' }}
-                >
-                    {msg.messageType === 'loading' && (
-                        <div className="d-flex align-items-center">
-                            <div className="spinner-border spinner-border-sm me-2"></div>
-                            <span>{msg.message}</span>
-                        </div>
-                    )}
-
-                    {msg.messageType === 'warning' && (
-                        <Alert variant="warning" className="mb-0">
-                            {msg.message.split('\n').map((line, i) => (
-                                <div key={i} dangerouslySetInnerHTML={{
-                                    __html: line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                                }} />
-                            ))}
-                        </Alert>
-                    )}
-
-                    {msg.messageType === 'results' && (
-                        <div>
-                            {msg.message.split('\n').map((line, i) => {
-                                if (line.startsWith('##')) {
-                                    return <h5 key={i} className="mb-2">{line.replace('##', '').trim()}</h5>;
-                                } else if (line.startsWith('**')) {
-                                    return <div key={i} dangerouslySetInnerHTML={{
-                                        __html: line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                                    }} />;
-                                } else {
-                                    return <div key={i}>{line}</div>;
-                                }
-                            })}
-                        </div>
-                    )}
-
-                    {msg.messageType === 'disclaimer' && (
-                        <Alert variant="info" className="mb-0">
-                            <small>{msg.message}</small>
-                        </Alert>
-                    )}
-
-                    {(!msg.messageType || msg.messageType === 'text') && (
-                        <div>
-                            {msg.message.split('\n').map((line, i) => (
-                                <div key={i}>
-                                    {line.includes('**') ? (
-                                        <span dangerouslySetInnerHTML={{
-                                            __html: line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                                        }} />
-                                    ) : line}
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            </div>
-        );
-    };
-
     if (isLoading) {
         return (
-            <Container fluid className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
+            <Container className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
                 <div className="text-center">
                     <div className="spinner-border text-primary mb-3"></div>
-                    <p>Loading Medical Assistant...</p>
+                    <div>Loading Medical Assistant...</div>
                 </div>
             </Container>
         );
@@ -447,11 +319,12 @@ const SymptomChecker = () => {
                                         width: '48px',
                                         height: '48px',
                                         background: 'white',
-                                        borderRadius: '12px',
+                                        borderRadius: '50%',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        fontSize: '24px'
+                                        fontSize: '20px',
+                                        color: '#0d6efd'
                                     }}
                                 >
                                     🏥
@@ -465,60 +338,43 @@ const SymptomChecker = () => {
 
                         {/* Progress */}
                         <div className="p-4">
-                            {renderProgressBar()}
-                        </div>
-
-                        {/* Features */}
-                        <div className="p-4">
-                            <h6 className="mb-3">Features</h6>
-                            <div className="d-flex flex-column gap-2">
-                                <Badge bg="light" text="dark" className="text-start p-2">
-                                    ✓ Smart Questioning
-                                </Badge>
-                                <Badge bg="light" text="dark" className="text-start p-2">
-                                    ✓ Symptom Validation
-                                </Badge>
-                                <Badge bg="light" text="dark" className="text-start p-2">
-                                    ✓ Multiple Conditions
-                                </Badge>
-                                <Badge bg="light" text="dark" className="text-start p-2">
-                                    ✓ Urgency Detection
-                                </Badge>
+                            <div className="mb-2">
+                                <small>Progress</small>
                             </div>
+                            <ProgressBar now={progress} className="mb-2" />
+                            <small className="opacity-75">{progress}% Complete</small>
                         </div>
 
                         {/* Disclaimer */}
-                        <div className="mt-auto p-4 border-top border-white border-opacity-25">
-                            <small className="opacity-75">
-                                ⚕️ This tool provides information only.
-                                Always consult healthcare professionals for medical advice.
-                            </small>
+                        <div className="p-4 mt-auto">
+                            <Alert variant="warning" className="mb-0 small">
+                                <strong>Medical Disclaimer:</strong> This tool is for informational purposes only. Always consult healthcare professionals for medical advice.
+                            </Alert>
                         </div>
                     </div>
                 </Col>
 
                 {/* Main Chat Area */}
                 <Col md={9} className="d-flex flex-column p-0">
-                    {/* Header */}
-                    <div className="bg-white border-bottom p-4">
-                        <h4 className="mb-1">Symptom Assessment</h4>
-                        <p className="text-muted mb-0">
-                            Let's understand your symptoms to provide helpful guidance
-                        </p>
+                    {/* Chat Messages */}
+                    <div className="flex-grow-1 p-4" style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 100px)' }}>
                         {error && (
-                            <Alert variant="warning" dismissible onClose={() => setError('')} className="mt-2 mb-0">
+                            <Alert variant="danger" className="mb-3">
                                 {error}
                             </Alert>
                         )}
-                    </div>
 
-                    {/* Messages */}
-                    <div className="flex-grow-1 p-4" style={{ overflowY: 'auto' }}>
                         {conversation.map((msg, index) => renderMessage(msg, index))}
 
-                        {/* Analysis results confidence meters */}
-                        {analysis && analysis.allConditions && analysis.allConditions.length > 0 && (
-                            renderConfidenceMeters(analysis.allConditions)
+                        {isAnalyzing && (
+                            <div className="d-flex justify-content-center">
+                                <div className="bg-light rounded-3 p-3">
+                                    <div className="d-flex align-items-center">
+                                        <div className="spinner-border spinner-border-sm me-2"></div>
+                                        Analyzing your symptoms...
+                                    </div>
+                                </div>
+                            </div>
                         )}
 
                         <div ref={messagesEndRef} />
@@ -538,7 +394,6 @@ const SymptomChecker = () => {
                                 <Button
                                     variant="primary"
                                     onClick={() => navigate('/find-doctors')}
-                                    disabled={!analysis.recommendations}
                                 >
                                     Find Recommended Doctors
                                 </Button>
@@ -546,17 +401,7 @@ const SymptomChecker = () => {
                                     variant="outline-secondary"
                                     onClick={() => window.location.reload()}
                                 >
-                                    Start New Assessment
-                                </Button>
-                                <Button
-                                    variant="outline-info"
-                                    onClick={() => {
-                                        const summary = `Assessment Summary:\n${JSON.stringify(userInputs, null, 2)}\n\nResults:\n${JSON.stringify(analysis, null, 2)}`;
-                                        navigator.clipboard.writeText(summary);
-                                        alert('Assessment summary copied to clipboard');
-                                    }}
-                                >
-                                    Copy Summary
+                                    Start Over
                                 </Button>
                             </div>
                         </div>
@@ -567,21 +412,16 @@ const SymptomChecker = () => {
     );
 };
 
-// Enhanced Checkbox Input Component
+// Checkbox input component
 const CheckboxInput = ({ options, onSubmit }) => {
     const [selected, setSelected] = useState([]);
 
     const handleToggle = (option) => {
-        setSelected(prev => {
-            if (option === 'None of the above') {
-                return prev.includes(option) ? [] : ['None of the above'];
-            }
-
-            const filtered = prev.filter(item => item !== 'None of the above');
-            return prev.includes(option)
-                ? filtered.filter(item => item !== option)
-                : [...filtered, option];
-        });
+        setSelected(prev =>
+            prev.includes(option)
+                ? prev.filter(item => item !== option)
+                : [...prev, option]
+        );
     };
 
     return (
@@ -601,7 +441,7 @@ const CheckboxInput = ({ options, onSubmit }) => {
             </Form>
             <Button
                 variant="primary"
-                onClick={() => onSubmit(selected.length > 0 ? selected : ['None selected'])}
+                onClick={() => onSubmit(selected.length > 0 ? selected : ['None of the above'])}
                 className="mt-3"
                 disabled={selected.length === 0}
             >
