@@ -1,7 +1,7 @@
 {
   "flu": {
     "name": "Flu",
-    "description": "Flu, also called influenza, is an infection of the nose, throat and lungs, which are part of the respiratory system. The flu is caused by a virus. Influenza viruses are different from the \"stomach flu\" viruses that cause diarrhea and vomiting. Most people with the flu get better on their own. But sometimes, influenza and its complications can be deadly. To help protect against seasonal flu, you can get an annual flu shot. Although the vaccine isn't 100% effective, it lowers the chances of having severe complications from the flu. This is especially true for people who are at high risk of flu complications.",
+    "descriptions": "Flu, also called influenza, is an infection of the nose, throat and lungs, which are part of the respiratory system. The flu is caused by a virus. Influenza viruses are different from the \"stomach flu\" viruses that cause diarrhea and vomiting. Most people with the flu get better on their own. But sometimes, influenza and its complications can be deadly. To help protect against seasonal flu, you can get an annual flu shot. Although the vaccine isn't 100% effective, it lowers the chances of having severe complications from the flu. This is especially true for people who are at high risk of flu complications.",
     "symptoms": [
       {
         "name": "Request appointment",
