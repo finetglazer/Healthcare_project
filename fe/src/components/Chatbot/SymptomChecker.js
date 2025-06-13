@@ -1,125 +1,75 @@
-// Fixed SymptomChecker.js - Analysis Results Display
-// fe/src/components/Chatbot/SymptomChecker.js
-
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+// fe/src/components/Chatbot/SymptomChecker.js - Minimal Working Fix
+import React, { useState, useEffect, useRef } from 'react';
 import { Container, Row, Col, Button, Form, Alert, ProgressBar } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import {
     conversationSteps,
     generateSmartQuestions,
     analyzeSymptoms,
-    loadKnowledgeBase
+    loadKnowledgeBase,
+    getNextStep,
+    validateInput
 } from './ChatbotFlow';
 
 const SymptomChecker = () => {
     const navigate = useNavigate();
-
-    // Core state
     const [currentStep, setCurrentStep] = useState(conversationSteps.GREETING);
     const [conversation, setConversation] = useState([]);
     const [userInputs, setUserInputs] = useState({});
     const [analysis, setAnalysis] = useState(null);
-    const [sessionId, setSessionId] = useState(null);
-
-    // UI state
     const [isAnalyzing, setIsAnalyzing] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState('');
-    const [progress, setProgress] = useState(0);
-
-    // Knowledge base
-    const [knowledgeBase, setKnowledgeBase] = useState(null);
-
+    const [isInitialized, setIsInitialized] = useState(false);
     const messagesEndRef = useRef(null);
-
-    const getCurrentProgress = useCallback(() => {
-        const stepOrder = [
-            conversationSteps.GREETING,
-            conversationSteps.PRIMARY_SYMPTOMS,
-            conversationSteps.SYMPTOM_DETAILS,
-            conversationSteps.SEVERITY,
-            conversationSteps.DURATION,
-            conversationSteps.FOLLOW_UP_QUESTIONS,
-            conversationSteps.DIFFERENTIAL_QUESTIONS,
-            conversationSteps.ADDITIONAL_INFO
-        ];
-
-        const currentIndex = stepOrder.indexOf(currentStep);
-        return Math.round((currentIndex / (stepOrder.length - 1)) * 100);
-    }, [currentStep]);
-
-    const generateSessionId = () => {
-        return Date.now().toString(36) + Math.random().toString(36).substr(2);
-    };
-
-    const initializeChatbot = useCallback(async () => {
-        try {
-            setIsLoading(true);
-
-            // Load knowledge base
-            const kb = await loadKnowledgeBase();
-            setKnowledgeBase(kb);
-
-            // Generate session ID
-            const newSessionId = generateSessionId();
-            setSessionId(newSessionId);
-
-            // Only add initial message if conversation is empty
-            if (conversation.length === 0) {
-                const initialQuestion = generateSmartQuestions(conversationSteps.GREETING, {});
-                addBotMessage(initialQuestion.message);
-            }
-
-            setError('');
-        } catch (err) {
-            console.error('Failed to initialize chatbot:', err);
-            setError('Failed to load medical assistant. Please try again.');
-        } finally {
-            setIsLoading(false);
-        }
-    }, [conversation.length]);
 
     // Auto scroll to bottom
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [conversation]);
 
-    // Initialize component only once
+    // Initialize chatbot
     useEffect(() => {
-        initializeChatbot();
-    }, []);
+        const initializeChatbot = async () => {
+            try {
+                await loadKnowledgeBase();
+                const initialQuestion = generateSmartQuestions(conversationSteps.GREETING, {});
+                addBotMessage(initialQuestion.message);
+                setIsInitialized(true);
+            } catch (error) {
+                console.error('Failed to initialize chatbot:', error);
+                addBotMessage("Hello! I'm your medical assistant. What symptoms are you experiencing?");
+                setIsInitialized(true);
+            }
+        };
 
-    // Update progress
-    useEffect(() => {
-        setProgress(getCurrentProgress());
-    }, [getCurrentProgress]);
+        if (!isInitialized) {
+            initializeChatbot();
+        }
+    }, [isInitialized]);
 
-    const addBotMessage = (message, type = 'text') => {
-        const messageText = typeof message === 'string' ? message :
-            typeof message === 'object' ? JSON.stringify(message) :
-                String(message);
-
+    const addBotMessage = (message) => {
         setConversation(prev => [...prev, {
             type: 'bot',
-            message: messageText,
-            messageType: type,
+            message,
             timestamp: new Date()
         }]);
     };
 
     const addUserMessage = (message) => {
-        const messageText = Array.isArray(message) ? message.join(', ') :
-            typeof message === 'string' ? message :
-                String(message);
-
         setConversation(prev => [...prev, {
             type: 'user',
-            message: messageText,
+            message: Array.isArray(message) ? message.join(', ') : message,
             timestamp: new Date()
         }]);
     };
 
     const handleUserInput = async (input) => {
+        // Validate input
+        const validation = validateInput(currentStep, input);
+        if (!validation.isValid) {
+            addBotMessage(validation.error);
+            return;
+        }
+
         addUserMessage(input);
 
         // Store user input
@@ -127,11 +77,21 @@ const SymptomChecker = () => {
         setUserInputs(newInputs);
 
         // Get next step
-        const nextStep = getNextStep(currentStep, input, newInputs);
+        const nextStep = getNextStep(currentStep, newInputs);
 
         if (nextStep === conversationSteps.ANALYSIS) {
-            // Perform analysis
-            await performAnalysis(newInputs);
+            // Analyze symptoms
+            setIsAnalyzing(true);
+            try {
+                const result = await analyzeSymptoms(newInputs);
+                setAnalysis(result);
+                showAnalysisResults(result);
+            } catch (error) {
+                console.error('Analysis failed:', error);
+                addBotMessage("I'm having trouble analyzing your symptoms. Please consult a healthcare provider.");
+            } finally {
+                setIsAnalyzing(false);
+            }
         } else {
             // Continue conversation
             setCurrentStep(nextStep);
@@ -142,282 +102,49 @@ const SymptomChecker = () => {
         }
     };
 
-    const getNextStep = (current, input, allInputs) => {
-        const question = generateSmartQuestions(current, allInputs);
-
-        // Smart step logic - skip irrelevant questions
-        if (current === conversationSteps.SEVERITY && allInputs.primary_symptoms) {
-            const symptoms = allInputs.primary_symptoms || [];
-
-            // Skip follow-up questions for mild symptoms
-            if (input <= 3 && !symptoms.some(s => s.includes('breathing') || s.includes('chest'))) {
-                return conversationSteps.DURATION;
-            }
+    const showAnalysisResults = (result) => {
+        if (!result || result.error) {
+            addBotMessage("I wasn't able to provide a reliable analysis. Please consult a healthcare provider for proper evaluation.");
+            return;
         }
 
-        return question.next;
-    };
+        const [condition, confidence] = result.mostLikely || ['Unknown condition', 0.3];
+        const { specialist, urgency, note } = result.recommendation || {};
 
-    // FIXED: Improved analysis handling
-    const performAnalysis = async (inputs) => {
-        setIsAnalyzing(true);
-        addBotMessage("Thank you for the information. Let me analyze your symptoms...");
+        const resultMessage = `
+Based on your symptoms, you might have: **${condition}** (${Math.round(confidence * 100)}% confidence)
 
-        try {
-            console.log('Starting analysis with inputs:', inputs);
+**Recommendation:**
+- See a ${specialist || 'General Practitioner'}
+- Urgency: ${urgency || 'MODERATE'}
+- ${note || 'Please consult a healthcare provider for proper evaluation.'}
 
-            const result = await analyzeSymptoms(inputs, sessionId);
-            console.log('Analysis result:', result);
+**Medical Disclaimer:** This is not a medical diagnosis. Please consult with a qualified healthcare professional for proper medical advice.
 
-            // FIXED: Handle different response structures
-            let analysisData;
-            if (result.success && result.data) {
-                // If response has success wrapper
-                analysisData = result.data;
-            } else if (result.analysis) {
-                // If response has analysis directly
-                analysisData = result.analysis;
-            } else if (result.mostLikely || result.conditions) {
-                // If response is analysis data directly
-                analysisData = result;
-            } else {
-                throw new Error('Invalid analysis response structure');
-            }
+Would you like to find ${(specialist || 'doctors').toLowerCase()} in our system?
+        `;
 
-            console.log('Processed analysis data:', analysisData);
-
-            setAnalysis(analysisData);
-            showAnalysisResults(analysisData);
-
-        } catch (err) {
-            console.error('Analysis error:', err);
-            setError('Analysis failed. Please consult a healthcare provider.');
-            addBotMessage("I'm sorry, I couldn't analyze your symptoms right now. Please consult a healthcare provider.");
-
-            // Try fallback analysis
-            try {
-                const fallbackResult = await performFallbackAnalysis(inputs);
-                if (fallbackResult) {
-                    setAnalysis(fallbackResult);
-                    showAnalysisResults(fallbackResult);
-                }
-            } catch (fallbackErr) {
-                console.error('Fallback analysis also failed:', fallbackErr);
-            }
-        } finally {
-            setIsAnalyzing(false);
-        }
-    };
-
-    // FIXED: Comprehensive result display function
-    const showAnalysisResults = (analysisData) => {
-        console.log('Showing analysis results:', analysisData);
-
-        try {
-            let resultMessage = `## 🏥 Analysis Complete\n\n`;
-
-            // Handle different response structures
-            const conditions = analysisData.conditions || analysisData.mostLikely || analysisData.results || [];
-            const urgency = analysisData.urgency || analysisData.urgencyLevel || 'MEDIUM';
-            const recommendations = analysisData.recommendations || analysisData.recommendation || {};
-            const confidence = analysisData.confidence || 0;
-
-            // Display primary condition
-            if (conditions && conditions.length > 0) {
-                let primaryCondition;
-                let primaryConfidence;
-
-                if (Array.isArray(conditions[0])) {
-                    // Format: [["condition", confidence], ...]
-                    [primaryCondition, primaryConfidence] = conditions[0];
-                } else if (conditions[0].condition || conditions[0].name) {
-                    // Format: [{condition: "", confidence: 0.8}, ...]
-                    primaryCondition = conditions[0].condition || conditions[0].name;
-                    primaryConfidence = conditions[0].confidence || conditions[0].probability;
-                } else {
-                    // Fallback
-                    primaryCondition = String(conditions[0]);
-                    primaryConfidence = confidence;
-                }
-
-                resultMessage += `**Most Likely Condition:** ${primaryCondition}\n`;
-                resultMessage += `**Confidence:** ${Math.round((primaryConfidence || 0) * 100)}%\n\n`;
-
-                // Show confidence meter
-                const confidencePercentage = Math.round((primaryConfidence || 0) * 100);
-                const confidenceColor = confidencePercentage >= 70 ? 'success' :
-                    confidencePercentage >= 50 ? 'warning' : 'danger';
-
-                addBotMessage(`📊 **Confidence Level:** ${confidencePercentage}%`, 'confidence');
-            }
-
-            // Display recommendations
-            if (recommendations.specialist || recommendations.action) {
-                resultMessage += `**🩺 Recommendations:**\n`;
-                resultMessage += `• See a ${recommendations.specialist || 'healthcare provider'}\n`;
-                resultMessage += `• Urgency Level: ${urgency}\n`;
-
-                if (recommendations.note || recommendations.message) {
-                    resultMessage += `• ${recommendations.note || recommendations.message}\n`;
-                }
-            }
-
-            // Urgency warnings
-            if (urgency === 'HIGH' || urgency === 'URGENT') {
-                resultMessage += `\n⚠️ **IMPORTANT:** Your symptoms suggest you should seek immediate medical attention.\n`;
-                addBotMessage(resultMessage, 'urgent');
-            } else if (urgency === 'MEDIUM') {
-                resultMessage += `\n⚡ **Note:** Please consider consulting a healthcare provider soon.\n`;
-                addBotMessage(resultMessage, 'result');
-            } else {
-                addBotMessage(resultMessage, 'result');
-            }
-
-            // Show alternative conditions
-            if (conditions && conditions.length > 1) {
-                let alternativeMessage = `\n**🔍 Other Possible Conditions:**\n`;
-                for (let i = 1; i < Math.min(conditions.length, 3); i++) {
-                    let altCondition, altConfidence;
-
-                    if (Array.isArray(conditions[i])) {
-                        [altCondition, altConfidence] = conditions[i];
-                    } else {
-                        altCondition = conditions[i].condition || conditions[i].name;
-                        altConfidence = conditions[i].confidence || conditions[i].probability;
-                    }
-
-                    alternativeMessage += `• ${altCondition} (${Math.round((altConfidence || 0) * 100)}%)\n`;
-                }
-                addBotMessage(alternativeMessage, 'alternatives');
-            }
-
-            // Medical disclaimer
-            const disclaimerMessage = `\n⚖️ **Medical Disclaimer:** This analysis is for informational purposes only and should not replace professional medical advice. Always consult with a qualified healthcare provider for proper diagnosis and treatment.`;
-            addBotMessage(disclaimerMessage, 'disclaimer');
-
-        } catch (err) {
-            console.error('Error displaying results:', err);
-            addBotMessage("Analysis completed, but there was an issue displaying the results. Please consult a healthcare provider.", 'error');
-        }
-    };
-
-    // Fallback analysis for when backend fails
-    const performFallbackAnalysis = async (inputs) => {
-        console.log('Performing fallback analysis...');
-
-        // Simple client-side analysis
-        const conditions = {
-            'COVID-19': 0,
-            'Flu': 0,
-            'Cold': 0,
-            'Allergy': 0
-        };
-
-        const allSymptoms = Object.values(inputs).flat().join(' ').toLowerCase();
-
-        // COVID-19 indicators
-        if (allSymptoms.includes('loss of taste') || allSymptoms.includes('loss of smell')) {
-            conditions['COVID-19'] += 0.8;
-        }
-        if (allSymptoms.includes('cough') || allSymptoms.includes('fever')) {
-            conditions['COVID-19'] += 0.4;
-        }
-
-        // Flu indicators
-        if (allSymptoms.includes('fever') || allSymptoms.includes('body aches')) {
-            conditions['Flu'] += 0.7;
-        }
-        if (allSymptoms.includes('fatigue') || allSymptoms.includes('chills')) {
-            conditions['Flu'] += 0.5;
-        }
-
-        // Cold indicators
-        if (allSymptoms.includes('runny nose') || allSymptoms.includes('sneezing')) {
-            conditions['Cold'] += 0.8;
-        }
-        if (allSymptoms.includes('sore throat')) {
-            conditions['Cold'] += 0.6;
-        }
-
-        // Allergy indicators
-        if (allSymptoms.includes('sneezing') || allSymptoms.includes('itchy')) {
-            conditions['Allergy'] += 0.9;
-        }
-
-        // Find most likely condition
-        const mostLikely = Object.entries(conditions)
-            .sort(([,a], [,b]) => b - a)
-            .filter(([,score]) => score > 0);
-
-        if (mostLikely.length === 0) {
-            return null;
-        }
-
-        return {
-            conditions: mostLikely,
-            urgency: 'MEDIUM',
-            recommendations: {
-                specialist: 'General Practitioner',
-                message: 'Based on limited analysis, please consult a healthcare provider.'
-            },
-            fallback: true
-        };
-    };
-
-    const renderMessage = (msg, index) => {
-        const isBot = msg.type === 'bot';
-        const isUrgent = msg.messageType === 'urgent';
-        const isResult = msg.messageType === 'result';
-
-        return (
-            <div
-                key={index}
-                className={`d-flex mb-3 ${isBot ? 'justify-content-start' : 'justify-content-end'}`}
-            >
-                <div
-                    className={`p-3 rounded-3 ${
-                        isBot
-                            ? isUrgent
-                                ? 'bg-danger text-white'
-                                : isResult
-                                    ? 'bg-success text-white'
-                                    : 'bg-light text-dark'
-                            : 'bg-primary text-white'
-                    }`}
-                    style={{ maxWidth: '75%' }}
-                >
-                    {msg.message.split('\n').map((line, i) => (
-                        <div key={i}>
-                            {line.includes('**') ? (
-                                <span dangerouslySetInnerHTML={{
-                                    __html: line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                                }} />
-                            ) : line}
-                        </div>
-                    ))}
-                </div>
-            </div>
-        );
+        addBotMessage(resultMessage.trim());
     };
 
     const renderQuestionInput = () => {
-        if (isLoading) {
-            return <div>Loading...</div>;
-        }
+        if (isAnalyzing || analysis) return null;
 
         const question = generateSmartQuestions(currentStep, userInputs);
+
+        if (!question) return null;
 
         switch (question.type) {
             case 'multiple_choice':
                 return (
                     <div>
-                        <p className="mb-3">{question.message}</p>
                         <div className="d-grid gap-2">
-                            {question.options.map((option, index) => (
+                            {question.options?.map((option, index) => (
                                 <Button
                                     key={index}
                                     variant="outline-primary"
                                     onClick={() => handleUserInput(option)}
+                                    className="text-start"
                                 >
                                     {option}
                                 </Button>
@@ -429,33 +156,43 @@ const SymptomChecker = () => {
             case 'scale':
                 return (
                     <div>
-                        <p className="mb-3">{question.message}</p>
-                        <div className="d-flex flex-wrap gap-2">
-                            {Array.from({ length: question.max - question.min + 1 }, (_, i) => (
-                                <Button
-                                    key={i + question.min}
-                                    variant="outline-primary"
-                                    size="sm"
-                                    onClick={() => handleUserInput(i + question.min)}
-                                    style={{ minWidth: '40px' }}
-                                >
-                                    {i + question.min}
-                                </Button>
-                            ))}
+                        <div className="mb-3">
+                            <div className="d-flex justify-content-between mb-2">
+                                <small>Very Mild</small>
+                                <small>Severe</small>
+                            </div>
+                            <div className="d-flex gap-1">
+                                {[...Array(10)].map((_, i) => (
+                                    <Button
+                                        key={i + 1}
+                                        variant="outline-primary"
+                                        size="sm"
+                                        onClick={() => handleUserInput(i + 1)}
+                                        style={{ minWidth: '40px' }}
+                                    >
+                                        {i + 1}
+                                    </Button>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 );
 
             case 'checkbox':
-                return <CheckboxInput options={question.options} onSubmit={handleUserInput} />;
+                return <CheckboxInput options={question.options || []} onSubmit={handleUserInput} />;
 
             case 'text':
-                return <TextInput question={question.message} onSubmit={handleUserInput} />;
+                return <TextInput onSubmit={handleUserInput} />;
 
             default:
                 return null;
         }
     };
+
+    // Calculate progress
+    const steps = Object.keys(conversationSteps).length - 1; // Exclude ANALYSIS
+    const currentStepIndex = Object.values(conversationSteps).indexOf(currentStep);
+    const progress = Math.min((currentStepIndex / steps) * 100, 100);
 
     return (
         <Container fluid style={{ height: '100vh', background: '#f8f9fa' }}>
@@ -472,35 +209,57 @@ const SymptomChecker = () => {
                                         width: '48px',
                                         height: '48px',
                                         background: 'white',
-                                        borderRadius: '12px',
+                                        borderRadius: '50%',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center'
                                     }}
                                 >
-                                    🏥
+                                    <span style={{ color: '#0d6efd', fontSize: '24px', fontWeight: 'bold' }}>+</span>
                                 </div>
                                 <div>
-                                    <h5 className="mb-0">Medical Assistant</h5>
+                                    <h5 className="mb-0">MedAssist</h5>
                                     <small className="opacity-75">Symptom Checker</small>
                                 </div>
                             </div>
                         </div>
 
                         {/* Progress */}
-                        <div className="p-4">
+                        <div className="p-4 border-bottom border-white border-opacity-25">
                             <div className="mb-2">
                                 <small>Progress</small>
                             </div>
-                            <ProgressBar now={progress} variant="light" />
-                            <small className="opacity-75">{progress}% Complete</small>
+                            <ProgressBar
+                                now={progress}
+                                variant="success"
+                                style={{ height: '8px' }}
+                            />
+                            <small className="opacity-75 mt-1">{Math.round(progress)}% Complete</small>
+                        </div>
+
+                        {/* Features */}
+                        <div className="p-4 flex-grow-1">
+                            <h6 className="mb-3">How it works:</h6>
+                            <ul className="list-unstyled">
+                                <li className="mb-2">
+                                    <small>✓ Answer questions about your symptoms</small>
+                                </li>
+                                <li className="mb-2">
+                                    <small>✓ Get AI-powered condition analysis</small>
+                                </li>
+                                <li className="mb-2">
+                                    <small>✓ Receive specialist recommendations</small>
+                                </li>
+                                <li className="mb-2">
+                                    <small>✓ Find nearby healthcare providers</small>
+                                </li>
+                            </ul>
                         </div>
 
                         {/* Disclaimer */}
-                        <div className="mt-auto p-4">
-                            <Alert variant="warning" className="mb-0 small">
-                                ⚠️ This is a preliminary assessment tool.
-                                Always consult healthcare professionals for medical advice.
+                        <div className="p-4 border-top border-white border-opacity-25">
+                            <Alert variant="warning" className="small mb-0">
+                                <strong>Medical Disclaimer:</strong> This tool provides information only and is not a substitute for professional medical advice.
                             </Alert>
                         </div>
                     </div>
@@ -508,15 +267,33 @@ const SymptomChecker = () => {
 
                 {/* Main Chat Area */}
                 <Col md={9} className="d-flex flex-column p-0">
-                    {/* Chat Messages */}
-                    <div className="flex-grow-1 p-4" style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 100px)' }}>
-                        {error && (
-                            <Alert variant="danger" className="mb-3">
-                                {error}
-                            </Alert>
-                        )}
-
-                        {conversation.map((msg, index) => renderMessage(msg, index))}
+                    {/* Messages */}
+                    <div className="flex-grow-1 p-4" style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 200px)' }}>
+                        {conversation.map((msg, index) => (
+                            <div
+                                key={index}
+                                className={`d-flex mb-3 ${msg.type === 'user' ? 'justify-content-end' : 'justify-content-start'}`}
+                            >
+                                <div
+                                    className={`rounded-3 p-3 ${
+                                        msg.type === 'user'
+                                            ? 'bg-primary text-white'
+                                            : 'bg-light text-dark'
+                                    }`}
+                                    style={{ maxWidth: '75%' }}
+                                >
+                                    {msg.message.split('\n').map((line, i) => (
+                                        <div key={i}>
+                                            {line.includes('**') ? (
+                                                <span dangerouslySetInnerHTML={{
+                                                    __html: line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                                                }} />
+                                            ) : line}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
 
                         {isAnalyzing && (
                             <div className="d-flex justify-content-center">
@@ -593,7 +370,7 @@ const CheckboxInput = ({ options, onSubmit }) => {
             </Form>
             <Button
                 variant="primary"
-                onClick={() => onSubmit(selected.length > 0 ? selected : ['None'])}
+                onClick={() => onSubmit(selected.length > 0 ? selected : ['None of the above'])}
                 className="mt-3"
                 disabled={selected.length === 0}
             >
@@ -604,34 +381,28 @@ const CheckboxInput = ({ options, onSubmit }) => {
 };
 
 // Text input component
-const TextInput = ({ question, onSubmit }) => {
-    const [input, setInput] = useState('');
+const TextInput = ({ onSubmit }) => {
+    const [text, setText] = useState('');
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (input.trim()) {
-            onSubmit(input.trim());
-            setInput('');
+        if (text.trim()) {
+            onSubmit(text.trim());
+            setText('');
         }
     };
 
     return (
         <Form onSubmit={handleSubmit}>
-            <Form.Group>
-                <Form.Label>{question}</Form.Label>
+            <Form.Group className="mb-3">
                 <Form.Control
                     type="text"
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    placeholder="Type your answer..."
+                    placeholder="Type your additional symptoms or information..."
+                    value={text}
+                    onChange={(e) => setText(e.target.value)}
                 />
             </Form.Group>
-            <Button
-                type="submit"
-                variant="primary"
-                className="mt-2"
-                disabled={!input.trim()}
-            >
+            <Button type="submit" variant="primary" disabled={!text.trim()}>
                 Continue
             </Button>
         </Form>

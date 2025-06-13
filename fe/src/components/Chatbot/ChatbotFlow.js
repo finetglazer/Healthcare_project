@@ -1,6 +1,4 @@
-// Fixed ChatbotFlow.js - Backend Integration
-// fe/src/components/Chatbot/ChatbotFlow.js
-
+// fe/src/components/Chatbot/ChatbotFlow.js - Complete Fixed Version
 import axios from 'axios';
 
 const API_BASE_URL = 'http://localhost:8000/api/medical/chatbot';
@@ -18,53 +16,49 @@ export const conversationSteps = {
     ANALYSIS: 'analysis'
 };
 
-// Knowledge base cache
-let knowledgeBase = null;
+// =============================================================================
+// HELPER FUNCTIONS - Fix for the join() error
+// =============================================================================
 
-// Load knowledge base from backend
-export const loadKnowledgeBase = async () => {
-    try {
-        console.log('Loading knowledge base from:', `${API_BASE_URL}/knowledge/`);
-        const response = await axios.get(`${API_BASE_URL}/knowledge/`, {
-            timeout: 10000 // 10 second timeout
-        });
-
-        console.log('Knowledge base loaded:', response.data);
-        knowledgeBase = response.data;
-        return knowledgeBase;
-    } catch (error) {
-        console.error('Failed to load knowledge base:', error);
-        // Fallback to mock data for development
-        const fallbackKB = getFallbackKnowledgeBase();
-        knowledgeBase = fallbackKB;
-        return fallbackKB;
+// Helper function to ensure symptoms is always an array
+const ensureArray = (value) => {
+    if (Array.isArray(value)) {
+        return value;
     }
+    if (typeof value === 'string') {
+        return [value];
+    }
+    if (value && typeof value === 'object') {
+        return Object.values(value);
+    }
+    return [];
 };
 
-// Fallback knowledge base for development
-const getFallbackKnowledgeBase = () => {
-    return {
-        conditions: {
-            flu: {
-                name: 'Influenza (Flu)',
-                symptoms: ['fever', 'body aches', 'fatigue', 'chills', 'headache']
-            },
-            cold: {
-                name: 'Common Cold',
-                symptoms: ['runny nose', 'sneezing', 'sore throat', 'congestion']
-            },
-            covid: {
-                name: 'COVID-19',
-                symptoms: ['loss of taste', 'loss of smell', 'cough', 'fever', 'shortness of breath']
-            },
-            allergy: {
-                name: 'Allergic Reaction',
-                symptoms: ['sneezing', 'itchy eyes', 'runny nose', 'watery eyes']
-            }
-        },
-        symptoms: ['fever', 'cough', 'runny nose', 'sneezing', 'body aches', 'fatigue', 'sore throat']
-    };
+// Helper function to extract all symptoms from user inputs
+const extractAllSymptoms = (inputs) => {
+    const allSymptoms = [];
+
+    // Extract from different possible input formats
+    Object.keys(inputs).forEach(key => {
+        const value = inputs[key];
+        if (Array.isArray(value)) {
+            allSymptoms.push(...value);
+        } else if (typeof value === 'string' && value.length > 0) {
+            allSymptoms.push(value);
+        }
+    });
+
+    return allSymptoms;
 };
+
+// Helper function to generate session ID
+const generateSessionId = () => {
+    return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+};
+
+// =============================================================================
+// QUESTION GENERATION FUNCTIONS
+// =============================================================================
 
 // Smart question generation based on previous answers
 export const generateSmartQuestions = (currentStep, userInputs) => {
@@ -268,10 +262,10 @@ const generateFollowUpMessage = (inputs) => {
     }
 };
 
-// Generate follow-up options based on severity and symptoms
+// FIXED: Generate follow-up options based on severity and symptoms
 const generateFollowUpOptions = (inputs) => {
     const severity = inputs[conversationSteps.SEVERITY] || inputs.severity || 5;
-    const symptoms = inputs[conversationSteps.SYMPTOM_DETAILS] || inputs.symptom_details || [];
+    const symptoms = ensureArray(inputs[conversationSteps.SYMPTOM_DETAILS] || inputs.symptom_details || []);
 
     const baseOptions = [
         'No other concerns',
@@ -303,9 +297,9 @@ const generateFollowUpOptions = (inputs) => {
     return baseOptions;
 };
 
-// Generate differential diagnosis questions
+// FIXED: Generate differential diagnosis questions
 const generateDifferentialMessage = (inputs) => {
-    const symptoms = inputs[conversationSteps.SYMPTOM_DETAILS] || inputs.symptom_details || [];
+    const symptoms = ensureArray(inputs[conversationSteps.SYMPTOM_DETAILS] || inputs.symptom_details || []);
     const symptomText = symptoms.join(' ').toLowerCase();
 
     if (symptomText.includes('fever') && symptomText.includes('cough')) {
@@ -317,9 +311,9 @@ const generateDifferentialMessage = (inputs) => {
     }
 };
 
-// Generate differential diagnosis options
+// FIXED: Generate differential diagnosis options
 const generateDifferentialOptions = (inputs) => {
-    const symptoms = inputs[conversationSteps.SYMPTOM_DETAILS] || inputs.symptom_details || [];
+    const symptoms = ensureArray(inputs[conversationSteps.SYMPTOM_DETAILS] || inputs.symptom_details || []);
     const symptomText = symptoms.join(' ').toLowerCase();
 
     if (symptomText.includes('fever') && symptomText.includes('cough')) {
@@ -350,7 +344,11 @@ const generateDifferentialOptions = (inputs) => {
     ];
 };
 
-// Enhanced symptom analysis with backend integration
+// =============================================================================
+// MAIN ANALYSIS FUNCTION
+// =============================================================================
+
+// FIXED: Enhanced symptom analysis
 export const analyzeSymptoms = async (userInputs, sessionId = null) => {
     try {
         console.log('Starting symptom analysis:', userInputs);
@@ -363,208 +361,247 @@ export const analyzeSymptoms = async (userInputs, sessionId = null) => {
             timestamp: new Date().toISOString()
         };
 
-        console.log('Sending analysis request:', analysisData);
+        console.log('Analysis data prepared:', analysisData);
 
-        // Try backend analysis first
+        // Try to call backend API
         try {
             const response = await axios.post(`${API_BASE_URL}/analyze/`, analysisData, {
-                timeout: 30000, // 30 second timeout
-                headers: {
-                    'Content-Type': 'application/json',
-                }
+                timeout: 10000 // 10 second timeout
             });
 
             console.log('Backend analysis response:', response.data);
-
-            // Handle different response formats
-            if (response.data.analysis) {
-                return {
-                    success: true,
-                    data: response.data.analysis,
-                    sessionId: response.data.session_id,
-                    backend: true
-                };
-            } else {
-                return {
-                    success: true,
-                    data: response.data,
-                    sessionId: response.data.session_id || sessionId,
-                    backend: true
-                };
-            }
-
+            return response.data;
         } catch (apiError) {
-            console.warn('Backend analysis failed, using fallback:', apiError);
-
-            // Check if it's a network error or server error
-            if (apiError.response && apiError.response.status >= 500) {
-                console.log('Server error, trying fallback analysis');
-            } else if (apiError.code === 'ECONNREFUSED') {
-                console.log('Connection refused, backend may be down');
-            }
-
-            return await performFallbackAnalysis(userInputs);
+            console.warn('Backend API failed, using fallback analysis:', apiError.message);
+            // Continue with fallback analysis below
         }
+
+        // Fallback analysis for development
+        const conditions = {
+            'COVID-19': 0,
+            'Influenza (Flu)': 0,
+            'Common Cold': 0,
+            'Allergic Reaction': 0
+        };
+
+        // Use the fixed helper function to extract symptoms
+        const allSymptoms = extractAllSymptoms(userInputs);
+        const allSymptomsText = allSymptoms.join(' ').toLowerCase();
+
+        console.log('All symptoms for analysis:', allSymptomsText);
+
+        // COVID-19 indicators
+        if (allSymptomsText.includes('loss of taste') || allSymptomsText.includes('loss of smell')) {
+            conditions['COVID-19'] += 0.8;
+        }
+        if (allSymptomsText.includes('shortness of breath') || allSymptomsText.includes('breathing')) {
+            conditions['COVID-19'] += 0.7;
+        }
+        if (allSymptomsText.includes('dry cough')) {
+            conditions['COVID-19'] += 0.6;
+        }
+        if (allSymptomsText.includes('fever')) {
+            conditions['COVID-19'] += 0.4;
+        }
+
+        // Flu indicators
+        if (allSymptomsText.includes('high fever') || allSymptomsText.includes('severe body aches')) {
+            conditions['Influenza (Flu)'] += 0.8;
+        }
+        if (allSymptomsText.includes('extreme fatigue')) {
+            conditions['Influenza (Flu)'] += 0.7;
+        }
+        if (allSymptomsText.includes('chills') || allSymptomsText.includes('sweats')) {
+            conditions['Influenza (Flu)'] += 0.6;
+        }
+        if (allSymptomsText.includes('body aches') || allSymptomsText.includes('headache')) {
+            conditions['Influenza (Flu)'] += 0.5;
+        }
+
+        // Cold indicators
+        if (allSymptomsText.includes('runny nose') || allSymptomsText.includes('nasal')) {
+            conditions['Common Cold'] += 0.8;
+        }
+        if (allSymptomsText.includes('sneezing')) {
+            conditions['Common Cold'] += 0.7;
+        }
+        if (allSymptomsText.includes('sore throat') || allSymptomsText.includes('throat')) {
+            conditions['Common Cold'] += 0.6;
+        }
+        if (allSymptomsText.includes('mild') || allSymptomsText.includes('low-grade fever')) {
+            conditions['Common Cold'] += 0.4;
+        }
+
+        // Allergy indicators
+        if (allSymptomsText.includes('itchy eyes') || allSymptomsText.includes('watery eyes')) {
+            conditions['Allergic Reaction'] += 0.8;
+        }
+        if (allSymptomsText.includes('sneezing') && !allSymptomsText.includes('fever')) {
+            conditions['Allergic Reaction'] += 0.7;
+        }
+        if (allSymptomsText.includes('seasonal') || allSymptomsText.includes('outdoor')) {
+            conditions['Allergic Reaction'] += 0.6;
+        }
+
+        // Find most likely condition
+        const sortedConditions = Object.entries(conditions)
+            .sort(([,a], [,b]) => b - a)
+            .filter(([,score]) => score > 0);
+
+        if (sortedConditions.length === 0) {
+            return {
+                mostLikely: ['Unknown condition', 0.3],
+                allConditions: conditions,
+                recommendation: {
+                    specialist: 'General Practitioner',
+                    urgency: 'MODERATE',
+                    note: 'Please consult a healthcare provider for proper evaluation.'
+                }
+            };
+        }
+
+        const [mostLikelyCondition, highestScore] = sortedConditions[0];
+
+        // Generate recommendation based on analysis
+        const recommendation = generateRecommendation(mostLikelyCondition, highestScore, userInputs);
+
+        console.log('Analysis complete:', {
+            mostLikelyCondition,
+            highestScore,
+            recommendation
+        });
+
+        return {
+            mostLikely: [mostLikelyCondition, Math.min(highestScore, 0.95)],
+            allConditions: Object.fromEntries(sortedConditions),
+            recommendation: recommendation,
+            confidence: Math.min(highestScore, 0.95),
+            sessionId: analysisData.session_id
+        };
 
     } catch (error) {
-        console.error('Analysis failed completely:', error);
-        return await performFallbackAnalysis(userInputs);
-    }
-};
-
-// Fallback analysis when backend is unavailable
-const performFallbackAnalysis = async (userInputs) => {
-    console.log('Performing client-side fallback analysis');
-
-    // Simple client-side analysis
-    const conditions = {
-        'COVID-19': 0,
-        'Influenza (Flu)': 0,
-        'Common Cold': 0,
-        'Allergic Reaction': 0
-    };
-
-    // Extract all symptoms from user inputs
-    const allSymptoms = extractAllSymptoms(userInputs).join(' ').toLowerCase();
-    console.log('All symptoms for analysis:', allSymptoms);
-
-    // COVID-19 indicators
-    if (allSymptoms.includes('loss of taste') || allSymptoms.includes('loss of smell')) {
-        conditions['COVID-19'] += 0.8;
-    }
-    if (allSymptoms.includes('shortness of breath') || allSymptoms.includes('breathing')) {
-        conditions['COVID-19'] += 0.7;
-    }
-    if (allSymptoms.includes('dry cough')) {
-        conditions['COVID-19'] += 0.6;
-    }
-    if (allSymptoms.includes('fever')) {
-        conditions['COVID-19'] += 0.4;
-    }
-
-    // Flu indicators
-    if (allSymptoms.includes('high fever') || allSymptoms.includes('severe body aches')) {
-        conditions['Influenza (Flu)'] += 0.8;
-    }
-    if (allSymptoms.includes('extreme fatigue')) {
-        conditions['Influenza (Flu)'] += 0.7;
-    }
-    if (allSymptoms.includes('chills') || allSymptoms.includes('sweats')) {
-        conditions['Influenza (Flu)'] += 0.6;
-    }
-    if (allSymptoms.includes('body aches') || allSymptoms.includes('headache')) {
-        conditions['Influenza (Flu)'] += 0.5;
-    }
-
-    // Cold indicators
-    if (allSymptoms.includes('runny nose') || allSymptoms.includes('nasal')) {
-        conditions['Common Cold'] += 0.8;
-    }
-    if (allSymptoms.includes('sneezing')) {
-        conditions['Common Cold'] += 0.7;
-    }
-    if (allSymptoms.includes('sore throat') || allSymptoms.includes('throat')) {
-        conditions['Common Cold'] += 0.6;
-    }
-    if (allSymptoms.includes('mild') || allSymptoms.includes('low-grade fever')) {
-        conditions['Common Cold'] += 0.4;
-    }
-
-    // Allergy indicators
-    if (allSymptoms.includes('itchy') || allSymptoms.includes('watery eyes')) {
-        conditions['Allergic Reaction'] += 0.9;
-    }
-    if (allSymptoms.includes('frequent sneezing')) {
-        conditions['Allergic Reaction'] += 0.8;
-    }
-    if (allSymptoms.includes('clear') && allSymptoms.includes('runny nose')) {
-        conditions['Allergic Reaction'] += 0.7;
-    }
-    if (allSymptoms.includes('seasonal') || allSymptoms.includes('outdoors')) {
-        conditions['Allergic Reaction'] += 0.6;
-    }
-
-    // Severity adjustments
-    const severity = userInputs.severity || 5;
-    if (severity <= 3) {
-        conditions['Allergic Reaction'] *= 1.2;
-        conditions['Common Cold'] *= 1.1;
-    } else if (severity >= 8) {
-        conditions['COVID-19'] *= 1.2;
-        conditions['Influenza (Flu)'] *= 1.1;
-    }
-
-    // Find most likely conditions
-    const sortedConditions = Object.entries(conditions)
-        .sort(([,a], [,b]) => b - a)
-        .filter(([,score]) => score > 0)
-        .map(([condition, score]) => [condition, Math.min(score, 1.0)]); // Cap at 100%
-
-    console.log('Fallback analysis results:', sortedConditions);
-
-    if (sortedConditions.length === 0) {
+        console.error('Error in symptom analysis:', error);
         return {
-            success: false,
-            error: 'Unable to analyze symptoms',
-            fallback: true
+            mostLikely: ['Analysis Error', 0.1],
+            allConditions: {},
+            recommendation: {
+                specialist: 'General Practitioner',
+                urgency: 'MODERATE',
+                note: 'Unable to complete analysis. Please consult a healthcare provider.'
+            },
+            error: true
         };
     }
+};
 
-    // Determine urgency
-    let urgency = 'LOW';
-    if (severity >= 8 || allSymptoms.includes('breathing') || allSymptoms.includes('chest')) {
-        urgency = 'HIGH';
-    } else if (severity >= 6 || allSymptoms.includes('high fever')) {
-        urgency = 'MEDIUM';
-    }
+// Generate recommendation based on condition and severity
+const generateRecommendation = (condition, confidence, inputs) => {
+    const severity = inputs[conversationSteps.SEVERITY] || inputs.severity || 5;
 
-    return {
-        success: true,
-        data: {
-            conditions: sortedConditions,
-            mostLikely: sortedConditions,
-            urgency: urgency,
-            urgencyLevel: urgency,
-            recommendations: {
-                specialist: urgency === 'HIGH' ? 'Emergency Room' :
-                    urgency === 'MEDIUM' ? 'Primary Care Physician' :
-                        'Healthcare Provider',
-                message: urgency === 'HIGH' ?
-                    'Your symptoms suggest you should seek immediate medical attention.' :
-                    'Please consider consulting a healthcare provider for proper evaluation.',
-                action: urgency === 'HIGH' ? 'Seek immediate care' : 'Schedule appointment'
-            },
-            confidence: sortedConditions.length > 0 ? sortedConditions[0][1] : 0,
-            fallback: true
+    const recommendations = {
+        'COVID-19': {
+            specialist: 'Infectious Disease Specialist',
+            urgency: severity >= 7 ? 'HIGH' : 'MODERATE',
+            note: severity >= 7
+                ? 'Seek immediate medical attention if symptoms worsen.'
+                : 'Consider getting tested and isolate until results are available.'
         },
-        sessionId: generateSessionId(),
-        backend: false
+        'Influenza (Flu)': {
+            specialist: 'General Practitioner',
+            urgency: severity >= 8 ? 'HIGH' : 'MODERATE',
+            note: severity >= 8
+                ? 'Seek immediate care for severe symptoms.'
+                : 'Rest, fluids, and monitor symptoms. Consider antiviral medication.'
+        },
+        'Common Cold': {
+            specialist: 'General Practitioner',
+            urgency: 'LOW',
+            note: 'Rest, fluids, and over-the-counter medications may help. See a doctor if symptoms worsen.'
+        },
+        'Allergic Reaction': {
+            specialist: 'Allergist',
+            urgency: severity >= 7 ? 'MODERATE' : 'LOW',
+            note: 'Identify and avoid triggers. Consider antihistamines.'
+        }
+    };
+
+    return recommendations[condition] || {
+        specialist: 'General Practitioner',
+        urgency: 'MODERATE',
+        note: 'Please consult a healthcare provider for proper evaluation.'
     };
 };
 
-// Extract all symptoms from user inputs
-const extractAllSymptoms = (userInputs) => {
-    const allSymptoms = [];
+// =============================================================================
+// KNOWLEDGE BASE FUNCTIONS
+// =============================================================================
 
-    Object.values(userInputs).forEach(value => {
-        if (Array.isArray(value)) {
-            allSymptoms.push(...value);
-        } else if (typeof value === 'string') {
-            allSymptoms.push(value);
-        }
-    });
+// Knowledge base cache
+let knowledgeBase = null;
 
-    return allSymptoms;
+// Load knowledge base from backend
+export const loadKnowledgeBase = async () => {
+    try {
+        console.log('Loading knowledge base from:', `${API_BASE_URL}/knowledge/`);
+        const response = await axios.get(`${API_BASE_URL}/knowledge/`, {
+            timeout: 10000 // 10 second timeout
+        });
+
+        console.log('Knowledge base loaded:', response.data);
+        knowledgeBase = response.data;
+        return knowledgeBase;
+    } catch (error) {
+        console.error('Failed to load knowledge base:', error);
+        // Fallback to mock data for development
+        const fallbackKB = getFallbackKnowledgeBase();
+        knowledgeBase = fallbackKB;
+        return fallbackKB;
+    }
 };
 
-// Generate session ID
-const generateSessionId = () => {
-    return Date.now().toString(36) + Math.random().toString(36).substr(2);
+// Fallback knowledge base for development
+const getFallbackKnowledgeBase = () => {
+    return {
+        conditions: {
+            flu: {
+                name: 'Influenza (Flu)',
+                symptoms: ['fever', 'body aches', 'fatigue', 'chills', 'headache']
+            },
+            cold: {
+                name: 'Common Cold',
+                symptoms: ['runny nose', 'sneezing', 'sore throat', 'congestion']
+            },
+            covid: {
+                name: 'COVID-19',
+                symptoms: ['loss of taste', 'loss of smell', 'cough', 'fever', 'shortness of breath']
+            },
+            allergy: {
+                name: 'Allergic Reaction',
+                symptoms: ['sneezing', 'itchy eyes', 'runny nose', 'watery eyes']
+            }
+        },
+        symptoms: ['fever', 'cough', 'runny nose', 'sneezing', 'body aches', 'fatigue', 'sore throat']
+    };
 };
 
-export default {
-    conversationSteps,
-    generateSmartQuestions,
-    analyzeSymptoms,
-    loadKnowledgeBase
+// =============================================================================
+// ADDITIONAL UTILITY FUNCTIONS
+// =============================================================================
+
+// Get next step with intelligent logic
+export const getNextStep = (currentStep, userInputs) => {
+    const question = generateSmartQuestions(currentStep, userInputs);
+    return question.next;
 };
+
+// Validate user input
+export const validateInput = (step, input) => {
+    if (!input || (Array.isArray(input) && input.length === 0)) {
+        return { isValid: false, error: 'Please select at least one option.' };
+    }
+
+    return { isValid: true };
+};
+
+// Default export
+export const chatbotQuestions = generateSmartQuestions;

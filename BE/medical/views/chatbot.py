@@ -349,3 +349,95 @@ class HealthCheckView(APIView):
                 'error': str(e),
                 'timestamp': timezone.now().isoformat()
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# Add these classes to the END of your BE/medical/views/chatbot.py file
+
+class ChatbotFeedbackView(APIView):
+    """Handle user feedback for chatbot interactions"""
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        """Submit feedback for chatbot analysis"""
+        try:
+            session_id = request.data.get('session_id')
+            feedback = request.data.get('feedback', {})
+
+            logger.info(f"Received feedback for session {session_id}: {feedback}")
+
+            # For now, just log the feedback
+            # In production, you'd save this to database
+
+            return Response({
+                'success': True,
+                'message': 'Feedback received',
+                'session_id': session_id,
+                'timestamp': timezone.now().isoformat()
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            logger.error(f"Failed to process feedback: {e}")
+            return Response({
+                'success': False,
+                'error': 'Failed to save feedback'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class ConversationSessionView(APIView):
+    """Manage conversation sessions"""
+    permission_classes = [AllowAny]
+
+    def get(self, request, session_id):
+        """Get conversation session data"""
+        try:
+            # For now, return minimal session data
+            # In production, you'd fetch from database/cache
+
+            return Response({
+                'session_id': session_id,
+                'status': 'active',
+                'created': timezone.now().isoformat(),
+                'messages': [],
+                'current_step': 'greeting'
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            logger.error(f"Failed to get session {session_id}: {e}")
+            return Response({
+                'error': 'Session not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+    def post(self, request, session_id):
+        """Update conversation session"""
+        try:
+            # For now, just acknowledge the update
+            # In production, you'd update database/cache
+
+            return Response({
+                'session_id': session_id,
+                'status': 'updated',
+                'timestamp': timezone.now().isoformat()
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            logger.error(f"Failed to update session {session_id}: {e}")
+            return Response({
+                'error': 'Failed to update session'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def delete(self, request, session_id):
+        """Delete conversation session"""
+        try:
+            # For now, just acknowledge the deletion
+            # In production, you'd delete from database/cache
+
+            return Response({
+                'session_id': session_id,
+                'status': 'deleted',
+                'timestamp': timezone.now().isoformat()
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            logger.error(f"Failed to delete session {session_id}: {e}")
+            return Response({
+                'error': 'Failed to delete session'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
