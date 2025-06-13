@@ -8,7 +8,7 @@ from django.core.cache import cache
 from ...services.enhanced_analyzer import EnhancedSymptomAnalyzer
 from ...services.chatbot_engine import ChatbotEngine
 from ...models.condition import MedicalCondition
-from ...models.sympton import Symptom, ConditionSymptom
+from ...models.symptom import Symptom, ConditionSymptom
 from ...models.recommendation import SpecialistRecommendation
 
 logger = logging.getLogger(__name__)

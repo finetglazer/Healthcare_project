@@ -12,7 +12,7 @@ SECRET_KEY = 'django-insecure-your-secret-key-here'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', '*']
 
 # Application definition
 INSTALLED_APPS = [
@@ -125,7 +125,6 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -196,3 +195,22 @@ LOGGING = {
         },
     },
 }
+
+# Chatbot Configuration (Import only if file exists)
+try:
+    from .settings.chatbot import CHATBOT_CONFIG
+    print("Chatbot config loaded successfully")
+except ImportError:
+    print("Chatbot config not found - using defaults")
+    CHATBOT_CONFIG = {
+        'KNOWLEDGE_BASE_DIR': 'medical_knowledge',
+        'KNOWLEDGE_BASE_CACHE_TIMEOUT': 60 * 30,
+        'ENABLE_MEDICAL_DISCLAIMERS': True,
+    }
+
+# Force these settings to override any previous values
+DEBUG = True
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', '*']
+
+# Debug print to see what's happening
+print(f"Final settings - DEBUG: {DEBUG}, ALLOWED_HOSTS: {ALLOWED_HOSTS}")

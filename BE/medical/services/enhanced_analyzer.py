@@ -6,7 +6,7 @@ from typing import Dict, List, Tuple, Any
 from django.conf import settings
 from django.core.cache import cache
 from ..models.condition import MedicalCondition
-from ..models.sympton import Symptom, ConditionSymptom
+from ..models.symptom import Symptom, ConditionSymptom
 from ..models.recommendation import SpecialistRecommendation
 
 logger = logging.getLogger(__name__)

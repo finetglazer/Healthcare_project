@@ -421,3 +421,6 @@ class ChatbotEngine:
                 'urgency': 'MEDIUM'
             }
         }
+
+    def get_session_data(self, session_id):
+        return cache.get(f"chatbot_session_{session_id}", {})
