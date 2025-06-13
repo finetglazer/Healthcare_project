@@ -1,0 +1,57 @@
+{
+  "distinguishing_features": {
+    "flu_vs_cold": {
+      "flu_indicators": [
+        "high fever",
+        "body aches",
+        "severe fatigue"
+      ],
+      "cold_indicators": [
+        "runny nose",
+        "sneezing",
+        "mild symptoms"
+      ],
+      "confidence_threshold": 0.7
+    },
+    "covid_vs_flu": {
+      "covid_indicators": [
+        "loss of taste",
+        "loss of smell",
+        "persistent cough"
+      ],
+      "flu_indicators": [
+        "body aches",
+        "chills",
+        "rapid onset"
+      ],
+      "confidence_threshold": 0.6
+    },
+    "allergy_vs_cold": {
+      "allergy_indicators": [
+        "itchy eyes",
+        "sneezing",
+        "clear discharge"
+      ],
+      "cold_indicators": [
+        "sore throat",
+        "progression",
+        "thick discharge"
+      ],
+      "confidence_threshold": 0.8
+    }
+  },
+  "combination_rules": {
+    "high_confidence_flu": [
+      "fever + body aches + fatigue"
+    ],
+    "high_confidence_covid": [
+      "loss of taste + loss of smell"
+    ],
+    "high_confidence_allergy": [
+      "itchy eyes + sneezing + clear runny nose"
+    ],
+    "high_confidence_cold": [
+      "runny nose + sore throat + sneezing"
+    ]
+  }
+}

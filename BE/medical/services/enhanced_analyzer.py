@@ -1,4 +1,4 @@
-# BE/medical/services/fixed_analyzer.py
+# BE/medical/services/enhanced_analyzer.py
 import json
 import logging
 from pathlib import Path
@@ -8,9 +8,9 @@ from ..models import MedicalCondition, Symptom, ConditionSymptom, SpecialistReco
 
 logger = logging.getLogger(__name__)
 
-class FixedSymptomAnalyzer:
+class EnhancedSymptomAnalyzer:  # Changed from FixedSymptomAnalyzer
     """
-    Fixed symptom analyzer with proper error handling and fallback mechanisms
+    Enhanced symptom analyzer with proper error handling and fallback mechanisms
     """
 
     def __init__(self):
