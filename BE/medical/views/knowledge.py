@@ -1,14 +1,16 @@
+# BE/medical/views/knowledge.py
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from ..models import MedicalCondition, Symptom, ConditionSymptom, SpecialistRecommendation
-from ..serializers.analysis import SymptomAnalysisSerializer, MedicalConditionSerializer
-from django.db.models import Q
+from rest_framework.generics import ListAPIView
+from rest_framework.pagination import PageNumberPagination
+from rest_framework import filters  # Add this line
 from django.db.models import Q
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
-from rest_framework.generics import ListAPIView
-from rest_framework.pagination import PageNumberPagination
+
+from ..models import MedicalCondition, Symptom, ConditionSymptom, SpecialistRecommendation
+from ..serializers.analysis import SymptomAnalysisSerializer, MedicalConditionSerializer
 from ..services.enhanced_analyzer import EnhancedSymptomAnalyzer
 
 
