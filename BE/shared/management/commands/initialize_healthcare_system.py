@@ -211,36 +211,37 @@ class Command(BaseCommand):
                     last_name=nurse_data['last_name'],
                     phone_number=nurse_data['phone_number']
                 )
+                # Replace the Nurse.objects.create section with:
                 Nurse.objects.create(
                     user=user,
                     qualification=nurse_data['qualification'],
                     department=nurse_data['department'],
                     license_number=nurse_data['license_number'],
-                    hire_date=date.today() - timedelta(days=365)
+                    hire_date=date.today() - timedelta(days=365),
+                    license_expiry=date.today() + timedelta(days=730),  # Add this line - 2 years from now
+                    emergency_contact_name=nurse_data.get('emergency_contact_name', 'Emergency Contact'),
+                    emergency_contact_phone=nurse_data.get('emergency_contact_phone', '555-0000')
                 )
+
                 self.stdout.write(f'Created nurse: {user.get_full_name()}')
 
     def create_laboratories(self):
         """Create sample laboratories and tests"""
         self.stdout.write('Creating laboratories...')
 
-        # Create laboratories
+        # Create laboratories - use only existing fields
         labs_data = [
             {
                 'name': 'Central Pathology Lab',
                 'lab_type': 'PATHOLOGY',
                 'location': 'Building A, Floor 2',
-                'phone_number': '555-1001',
-                'email': 'pathology@healthcare.com',
-                'operating_hours': 'Mon-Fri: 7AM-7PM, Sat: 8AM-4PM'
+                'is_active': True
             },
             {
                 'name': 'Radiology Department',
                 'lab_type': 'RADIOLOGY',
                 'location': 'Building B, Floor 1',
-                'phone_number': '555-1002',
-                'email': 'radiology@healthcare.com',
-                'operating_hours': '24/7 Emergency, Regular: Mon-Fri 6AM-10PM'
+                'is_active': True
             }
         ]
 
@@ -259,24 +260,17 @@ class Command(BaseCommand):
                 'name': 'Complete Blood Count',
                 'code': 'CBC',
                 'category': 'BLOOD',
-                'description': 'Comprehensive blood analysis including RBC, WBC, platelets',
-                'normal_range': 'Varies by component',
-                'sample_type': 'Blood',
-                'cost': Decimal('45.00'),
-                'duration_hours': 4,
-                'laboratory': pathology_lab
+                'cost': 45.00,
+                'laboratory': pathology_lab,
+                'is_active': True
             },
             {
                 'name': 'Lipid Panel',
                 'code': 'LIPID',
                 'category': 'BLOOD',
-                'description': 'Cholesterol and triglyceride levels',
-                'normal_range': 'Total cholesterol < 200 mg/dL',
-                'sample_type': 'Blood serum',
-                'cost': Decimal('35.00'),
-                'duration_hours': 6,
+                'cost': 35.00,
                 'laboratory': pathology_lab,
-                'preparation_instructions': 'Fast for 12 hours before test'
+                'is_active': True
             }
         ]
 
@@ -287,6 +281,7 @@ class Command(BaseCommand):
             )
             if created:
                 self.stdout.write(f'Created lab test: {test.name}')
+
 
     def create_pharmacies(self):
         """Create sample pharmacies and medications"""

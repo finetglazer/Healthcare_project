@@ -1,0 +1,790 @@
+{
+  "flu": {
+    "name": "Flu",
+    "description": "Flu, also called influenza, is an infection of the nose, throat and lungs, which are part of the respiratory system. The flu is caused by a virus. Influenza viruses are different from the \"stomach flu\" viruses that cause diarrhea and vomiting. Most people with the flu get better on their own. But sometimes, influenza and its complications can be deadly. To help protect against seasonal flu, you can get an annual flu shot. Although the vaccine isn't 100% effective, it lowers the chances of having severe complications from the flu. This is especially true for people who are at high risk of flu complications.",
+    "symptoms": [
+      {
+        "name": "Request appointment",
+        "probability": 0.7,
+        "is_primary": true
+      },
+      {
+        "name": "Log in",
+        "probability": 0.7,
+        "is_primary": true
+      },
+      {
+        "name": "Search",
+        "probability": 0.7,
+        "is_primary": true
+      },
+      {
+        "name": "Symptoms &causes",
+        "probability": 0.7,
+        "is_primary": true
+      },
+      {
+        "name": "Diagnosis &treatment",
+        "probability": 0.7,
+        "is_primary": true
+      },
+      {
+        "name": "Doctors &departments",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Fast breathing or ribs that pull in with each breath.",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Gray or blue lips or nail beds.",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "No tears when crying and a dry mouth, along with not needing to urinate.",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Symptoms, such as fever or cough, that get better but then come back or get worse.",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Symptoms&causes",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Diagnosis&treatment",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Doctors&departments",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Find a doctor",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Explore careers",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Sign up for free e-newsletters",
+        "probability": 0.7,
+        "is_primary": false
+      }
+    ],
+    "source": "Mayo Clinic",
+    "url": "https://www.mayoclinic.org/diseases-conditions/flu/symptoms-causes/syc-20351719"
+  },
+  "cold": {
+    "name": "Cold",
+    "description": "The common cold is an illness affecting your nose and throat. Most often, it's harmless, but it might not feel that way. Germs called viruses cause a common cold. Often, adults may have two or three colds each year. Infants and young children may have colds more often.",
+    "symptoms": [
+      {
+        "name": "Request appointment",
+        "probability": 0.7,
+        "is_primary": true
+      },
+      {
+        "name": "Log in",
+        "probability": 0.7,
+        "is_primary": true
+      },
+      {
+        "name": "Search",
+        "probability": 0.7,
+        "is_primary": true
+      },
+      {
+        "name": "Symptoms &causes",
+        "probability": 0.7,
+        "is_primary": true
+      },
+      {
+        "name": "Diagnosis &treatment",
+        "probability": 0.7,
+        "is_primary": true
+      },
+      {
+        "name": "Symptoms that get worse or do not get better.",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Fever greater than 101.3 degrees Fahrenheit (38.5 degrees Celsius) that lasts more than three days.",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Fever returning after a fever-free period.",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Shortness of breath.",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Wheezing.",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Intense sore throat, headache or sinus pain.",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Fever of 100.4 degrees Fahrenheit (38 degrees Celsius) in newborns up to 12 weeks.",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Rising fever or fever lasting more than two days in a child of any age.",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "More-intense symptoms, such as headache, throat pain or cough.",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Trouble with breathing or wheezing.",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Ear pain.",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Fussiness or drowsiness that isn't typical.",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "No interest in eating.",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Don't share. Don't share drinking glasses or silverware with other family members.",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Take care of yourself. Eat well, exercise and get plenty of sleep to help you stay healthy.",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Cold or allergy: Which is it?",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Cold remedies",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Cold symptoms: Does drinking milk increase phlegm?",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Do zinc supplements shorten colds?",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Humidifiers",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Neti pot: Can it clear my nose?",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Plugged ears: What is the remedy?",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Vicks VapoRub: An effective nasal decongestant?",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Warm-mist versus cool-mist humidifier: Which is better for a cold?",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Symptoms&causes",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Diagnosis&treatment",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Find a doctor",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Explore careers",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Sign up for free e-newsletters",
+        "probability": 0.7,
+        "is_primary": false
+      }
+    ],
+    "source": "Mayo Clinic",
+    "url": "https://www.mayoclinic.org/diseases-conditions/common-cold/symptoms-causes/syc-20351605"
+  },
+  "covid-19": {
+    "name": "Covid 19",
+    "description": "COVID-19, also called coronavirus disease 2019, is an illness caused by a virus. The virus is called severe acute respiratory syndrome coronavirus 2, or more commonly, SARS-CoV-2. It started spreading at the end of 2019 and became a pandemic disease in 2020. Coronaviruses are a family of viruses. These viruses cause illnesses such as the common cold, severe acute respiratory syndrome (SARS), Middle East respiratory syndrome (MERS) and coronavirus disease 2019 (COVID-19).",
+    "symptoms": [
+      {
+        "name": "Request appointment",
+        "probability": 0.7,
+        "is_primary": true
+      },
+      {
+        "name": "Log in",
+        "probability": 0.7,
+        "is_primary": true
+      },
+      {
+        "name": "Search",
+        "probability": 0.7,
+        "is_primary": true
+      },
+      {
+        "name": "Symptoms &causes",
+        "probability": 0.7,
+        "is_primary": true
+      },
+      {
+        "name": "Diagnosis &treatment",
+        "probability": 0.7,
+        "is_primary": true
+      },
+      {
+        "name": "Doctors &departments",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Dry cough.",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Shortness of breath.",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Loss of taste or smell.",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Extreme tiredness, called fatigue.",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Digestive symptoms such as upset stomach, vomiting or loose stools, called diarrhea.",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Pain, such as headaches and body or muscle aches.",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Fever or chills.",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Cold-like symptoms such as congestion, runny nose or sore throat.",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "In broad terms, mild COVID-19 doesn't affect the ability of the lungs to get oxygen to the body.",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Help from afar. Avoid close contact with anyone who is sick or has symptoms, if possible.",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Cover your coughs and sneezes. Cough or sneeze into a tissue or your elbow. Then wash your hands.",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "AskMayoExpert. COVID-19: Testing, symptoms. Mayo Clinic; Nov. 2, 2023.",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "AskMayoExpert. COVID-19: Outpatient management. Mayo Clinic; Oct. 10, 2023.",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Coronavirus",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Coronavirus infection by race",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "COVID-19 and pets",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "COVID-19 and vitamin D",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "COVID-19 and your mental health",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "COVID-19 drugs: Are there any that work?",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "COVID-19 in babies and children",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "COVID-19 travel advice",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "COVID-19 vaccines",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "COVID-19 vaccines for kids: What you need to know",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Mayo Clinic Minute: COVID-19 at-home tests and expiration dates\nDec. 23, 2024, 05:00 p.m.  CDT",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Mayo Clinic Minute: 3 misconceptions about COVID-19 and flu vaccines\nNov. 07, 2024, 04:26 p.m.  CDT",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Mayo Clinic expert discusses updated COVID-19 vaccines\nAug. 28, 2024, 03:00 p.m.  CDT",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Mayo Clinic Q and A: Who should get the latest COVID-19 vaccine?\nNov. 21, 2023, 01:30 p.m.  CDT",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Mayo Clinic expert answers questions about the new COVID-19 vaccine\nSept. 13, 2023, 04:15 p.m.  CDT",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Study identifies risk factors for long-haul COVID disease in adults\nSept. 13, 2023, 02:00 p.m.  CDT",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Symptoms&causes",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Diagnosis&treatment",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Doctors&departments",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Find a doctor",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Explore careers",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Sign up for free e-newsletters",
+        "probability": 0.7,
+        "is_primary": false
+      }
+    ],
+    "source": "Mayo Clinic",
+    "url": "https://www.mayoclinic.org/diseases-conditions/coronavirus/symptoms-causes/syc-20479963"
+  },
+  "allergies": {
+    "name": "Allergies",
+    "description": "Allergies happen when the immune system reacts to a foreign substance that gets inside the body. These substances are known as allergens. They include pollen, bee venom and pet dander. Allergies also can happen due to certain foods and medicines that don't cause reactions in most people. The immune system makes protective proteins called antibodies that attack invaders such as germs. But with allergies, the immune system makes antibodies that mark a specific allergen as harmful, even though it isn't. Coming into contact with the allergen causes an immune system reaction that can inflame the skin, sinuses, airways or digestive system.",
+    "symptoms": [
+      {
+        "name": "Request appointment",
+        "probability": 0.7,
+        "is_primary": true
+      },
+      {
+        "name": "Log in",
+        "probability": 0.7,
+        "is_primary": true
+      },
+      {
+        "name": "Search",
+        "probability": 0.7,
+        "is_primary": true
+      },
+      {
+        "name": "Symptoms &causes",
+        "probability": 0.7,
+        "is_primary": true
+      },
+      {
+        "name": "Diagnosis &treatment",
+        "probability": 0.7,
+        "is_primary": true
+      },
+      {
+        "name": "Doctors &departments",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Symptoms&causes",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Diagnosis&treatment",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Doctors&departments",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Find a doctor",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Explore careers",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Sign up for free e-newsletters",
+        "probability": 0.7,
+        "is_primary": false
+      }
+    ],
+    "source": "Mayo Clinic",
+    "url": "https://www.mayoclinic.org/diseases-conditions/allergies/symptoms-causes/syc-20351497"
+  },
+  "diabetes": {
+    "name": "Diabetes",
+    "description": "Diabetes mellitus refers to a group of diseases that affect how the body uses blood sugar (glucose). Glucose is an important source of energy for the cells that make up the muscles and tissues. It's also the brain's main source of fuel. The main cause of diabetes varies by type. But no matter what type of diabetes you have, it can lead to excess sugar in the blood. Too much sugar in the blood can lead to serious health problems.",
+    "symptoms": [
+      {
+        "name": "Request appointment",
+        "probability": 0.7,
+        "is_primary": true
+      },
+      {
+        "name": "Log in",
+        "probability": 0.7,
+        "is_primary": true
+      },
+      {
+        "name": "Search",
+        "probability": 0.7,
+        "is_primary": true
+      },
+      {
+        "name": "Symptoms &causes",
+        "probability": 0.7,
+        "is_primary": true
+      },
+      {
+        "name": "Diagnosis &treatment",
+        "probability": 0.7,
+        "is_primary": true
+      },
+      {
+        "name": "Doctors &departments",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Care atMayo Clinic",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Hearing impairment. Hearing problems are more common in people with diabetes.",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Symptoms&causes",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Diagnosis&treatment",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Doctors&departments",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Care atMayoClinic",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Find a doctor",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Explore careers",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Sign up for free e-newsletters",
+        "probability": 0.7,
+        "is_primary": false
+      }
+    ],
+    "source": "Mayo Clinic",
+    "url": "https://www.mayoclinic.org/diseases-conditions/diabetes/symptoms-causes/syc-20371444"
+  },
+  "hypertension": {
+    "name": "Hypertension",
+    "description": "High blood pressure is a common condition that affects the body's arteries. It's also called hypertension. If you have high blood pressure, the force of the blood pushing against the artery walls is consistently too high. The heart has to work harder to pump blood. Blood pressure is measured in millimeters of mercury (mm Hg). In general, hypertension is a blood pressure reading of 130/80 mm Hg or higher.",
+    "symptoms": [
+      {
+        "name": "Request appointment",
+        "probability": 0.7,
+        "is_primary": true
+      },
+      {
+        "name": "Log in",
+        "probability": 0.7,
+        "is_primary": true
+      },
+      {
+        "name": "Search",
+        "probability": 0.7,
+        "is_primary": true
+      },
+      {
+        "name": "Symptoms &causes",
+        "probability": 0.7,
+        "is_primary": true
+      },
+      {
+        "name": "Diagnosis &treatment",
+        "probability": 0.7,
+        "is_primary": true
+      },
+      {
+        "name": "Doctors &departments",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Overview",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Symptoms",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "When to see a doctor",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Causes",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Risk factors",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Complications",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "High blood pressure and sex",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "High blood pressure dangers",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Hypertensive crisis: What are the symptoms?",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Diseases & Conditions",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "High blood pressure (hypertension) - Symptoms & causes - Mayo Clinic",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Anxiety: A cause of high blood pressure?",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Beta blockers",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Beta blockers: Do they cause weight gain?",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Beta blockers: How do they affect exercise?",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Blood pressure chart",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Blood pressure cuff: Does size matter?",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Blood pressure medication: Still necessary if I lose weight?",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Blood pressure medications: Can they raise my triglycerides?",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Blood pressure readings: Why higher at home?",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Blood pressure: Can it be higher in one arm?",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Find a doctor",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Explore careers",
+        "probability": 0.7,
+        "is_primary": false
+      },
+      {
+        "name": "Sign up for free e-newsletters",
+        "probability": 0.7,
+        "is_primary": false
+      }
+    ],
+    "source": "Mayo Clinic",
+    "url": "https://www.mayoclinic.org/diseases-conditions/high-blood-pressure/symptoms-causes/syc-20373410"
+  }
+}
