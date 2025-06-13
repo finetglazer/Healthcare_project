@@ -1,15 +1,8 @@
-// fe/src/components/Chatbot/SymptomChecker.js - Minimal Working Fix
+// fe/src/components/Chatbot/SymptomChecker.js - Fixed Complete Version
 import React, { useState, useEffect, useRef } from 'react';
 import { Container, Row, Col, Button, Form, Alert, ProgressBar } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import {
-    conversationSteps,
-    generateSmartQuestions,
-    analyzeSymptoms,
-    loadKnowledgeBase,
-    getNextStep,
-    validateInput
-} from './ChatbotFlow';
+import { chatbotQuestions, conversationSteps, analyzeSymptoms } from './ChatbotFlow';
 
 const SymptomChecker = () => {
     const navigate = useNavigate();
@@ -18,7 +11,7 @@ const SymptomChecker = () => {
     const [userInputs, setUserInputs] = useState({});
     const [analysis, setAnalysis] = useState(null);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
-    const [isInitialized, setIsInitialized] = useState(false);
+    const [progress, setProgress] = useState(0);
     const messagesEndRef = useRef(null);
 
     // Auto scroll to bottom
@@ -26,125 +19,160 @@ const SymptomChecker = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [conversation]);
 
-    // Initialize chatbot
+    // Initialize conversation
+    // Initialize conversation
     useEffect(() => {
-        const initializeChatbot = async () => {
-            try {
-                await loadKnowledgeBase();
-                const initialQuestion = generateSmartQuestions(conversationSteps.GREETING, {});
-                addBotMessage(initialQuestion.message);
-                setIsInitialized(true);
-            } catch (error) {
-                console.error('Failed to initialize chatbot:', error);
-                addBotMessage("Hello! I'm your medical assistant. What symptoms are you experiencing?");
-                setIsInitialized(true);
-            }
-        };
-
-        if (!isInitialized) {
-            initializeChatbot();
+        if (conversation.length === 0) {
+            addBotMessage(chatbotQuestions[conversationSteps.GREETING].message);
         }
-    }, [isInitialized]);
+    }, []);
+
+    // Update progress based on current step
+    const updateProgress = () => {
+        const steps = Object.keys(conversationSteps);
+        const currentIndex = steps.indexOf(currentStep);
+        const progressPercentage = ((currentIndex + 1) / steps.length) * 100;
+        setProgress(Math.min(progressPercentage, 85)); // Max 85% until analysis complete
+    };
+
+    useEffect(() => {
+        updateProgress();
+    }, [currentStep]);
 
     const addBotMessage = (message) => {
+        // Ensure message is always a string
+        const messageStr = typeof message === 'string' ? message : JSON.stringify(message);
         setConversation(prev => [...prev, {
             type: 'bot',
-            message,
+            message: messageStr,
             timestamp: new Date()
         }]);
     };
 
     const addUserMessage = (message) => {
+        // Handle arrays and objects
+        let messageStr;
+        if (Array.isArray(message)) {
+            messageStr = message.join(', ');
+        } else if (typeof message === 'object') {
+            messageStr = JSON.stringify(message);
+        } else {
+            messageStr = String(message);
+        }
+
         setConversation(prev => [...prev, {
             type: 'user',
-            message: Array.isArray(message) ? message.join(', ') : message,
+            message: messageStr,
             timestamp: new Date()
         }]);
     };
 
     const handleUserInput = async (input) => {
-        // Validate input
-        const validation = validateInput(currentStep, input);
-        if (!validation.isValid) {
-            addBotMessage(validation.error);
-            return;
-        }
+        try {
+            addUserMessage(input);
 
-        addUserMessage(input);
+            // Store user input
+            const newInputs = { ...userInputs, [currentStep]: input };
+            setUserInputs(newInputs);
 
-        // Store user input
-        const newInputs = { ...userInputs, [currentStep]: input };
-        setUserInputs(newInputs);
-
-        // Get next step
-        const nextStep = getNextStep(currentStep, newInputs);
-
-        if (nextStep === conversationSteps.ANALYSIS) {
-            // Analyze symptoms
-            setIsAnalyzing(true);
-            try {
-                const result = await analyzeSymptoms(newInputs);
-                setAnalysis(result);
-                showAnalysisResults(result);
-            } catch (error) {
-                console.error('Analysis failed:', error);
-                addBotMessage("I'm having trouble analyzing your symptoms. Please consult a healthcare provider.");
-            } finally {
-                setIsAnalyzing(false);
+            // Get current question to determine next step
+            const currentQuestion = chatbotQuestions[currentStep];
+            if (!currentQuestion) {
+                throw new Error('Invalid conversation step');
             }
-        } else {
-            // Continue conversation
-            setCurrentStep(nextStep);
-            setTimeout(() => {
-                const nextQuestion = generateSmartQuestions(nextStep, newInputs);
-                addBotMessage(nextQuestion.message);
-            }, 500);
+
+            const nextStep = currentQuestion.next;
+
+            if (nextStep === conversationSteps.ANALYSIS) {
+                // Analyze symptoms
+                setIsAnalyzing(true);
+                addBotMessage("Let me analyze your symptoms...");
+
+                setTimeout(() => {
+                    try {
+                        const result = analyzeSymptoms(newInputs);
+                        setAnalysis(result);
+                        showAnalysisResults(result);
+                        setProgress(100);
+                        setIsAnalyzing(false);
+                    } catch (error) {
+                        console.error('Analysis error:', error);
+                        addBotMessage("I'm sorry, there was an error analyzing your symptoms. Please try again or consult a healthcare professional.");
+                        setIsAnalyzing(false);
+                    }
+                }, 2000);
+            } else {
+                // Continue conversation
+                setCurrentStep(nextStep);
+                setTimeout(() => {
+                    const nextMessage = chatbotQuestions[nextStep]?.message || "Please continue...";
+                    addBotMessage(nextMessage);
+                }, 500);
+            }
+        } catch (error) {
+            console.error('Error handling user input:', error);
+            addBotMessage("I'm sorry, something went wrong. Let's try again.");
         }
     };
 
     const showAnalysisResults = (result) => {
-        if (!result || result.error) {
-            addBotMessage("I wasn't able to provide a reliable analysis. Please consult a healthcare provider for proper evaluation.");
+        if (!result || !result.mostLikely) {
+            addBotMessage("I couldn't analyze your symptoms properly. Please consult a healthcare professional.");
             return;
         }
 
-        const [condition, confidence] = result.mostLikely || ['Unknown condition', 0.3];
-        const { specialist, urgency, note } = result.recommendation || {};
+        const [condition, confidence] = result.mostLikely;
+        const recommendation = result.recommendation || {};
+        const { specialist = "healthcare professional", urgency = "routine", note = "Please consult a medical professional" } = recommendation;
 
-        const resultMessage = `
-Based on your symptoms, you might have: **${condition}** (${Math.round(confidence * 100)}% confidence)
+        const urgencyLevel = urgency.toLowerCase();
+        const urgencyColor = urgencyLevel === 'urgent' ? 'danger' : urgencyLevel === 'moderate' ? 'warning' : 'info';
+
+        const resultMessage = `Based on your symptoms, you might have: **${condition}** 
+
+**Confidence Level:** ${Math.round(confidence * 100)}%
 
 **Recommendation:**
-- See a ${specialist || 'General Practitioner'}
-- Urgency: ${urgency || 'MODERATE'}
-- ${note || 'Please consult a healthcare provider for proper evaluation.'}
+- See a ${specialist}
+- Urgency: ${urgency}
+- ${note}
 
-**Medical Disclaimer:** This is not a medical diagnosis. Please consult with a qualified healthcare professional for proper medical advice.
+**Medical Disclaimer:** This is not a medical diagnosis. Always consult with a qualified healthcare professional for proper medical advice.
 
-Would you like to find ${(specialist || 'doctors').toLowerCase()} in our system?
-        `;
+Would you like to find ${specialist.toLowerCase()}s in our system?`;
 
-        addBotMessage(resultMessage.trim());
+        addBotMessage(resultMessage);
+
+        // Add other possible conditions if available
+        if (result.otherConditions && result.otherConditions.length > 0) {
+            const otherConditionsMessage = "**Other possible conditions:**\n" +
+                result.otherConditions.map(([cond, conf]) =>
+                    `- ${cond}: ${Math.round(conf * 100)}%`
+                ).join('\n');
+
+            setTimeout(() => addBotMessage(otherConditionsMessage), 1000);
+        }
+    };
+
+    const getCurrentQuestion = () => {
+        return chatbotQuestions[currentStep];
     };
 
     const renderQuestionInput = () => {
-        if (isAnalyzing || analysis) return null;
-
-        const question = generateSmartQuestions(currentStep, userInputs);
-
-        if (!question) return null;
+        const question = getCurrentQuestion();
+        if (!question || analysis) return null;
 
         switch (question.type) {
             case 'multiple_choice':
                 return (
                     <div>
-                        <div className="d-grid gap-2">
+                        <div className="mb-3">
                             {question.options?.map((option, index) => (
                                 <Button
                                     key={index}
                                     variant="outline-primary"
+                                    className="me-2 mb-2"
                                     onClick={() => handleUserInput(option)}
-                                    className="text-start"
                                 >
                                     {option}
                                 </Button>
@@ -157,20 +185,17 @@ Would you like to find ${(specialist || 'doctors').toLowerCase()} in our system?
                 return (
                     <div>
                         <div className="mb-3">
-                            <div className="d-flex justify-content-between mb-2">
-                                <small>Very Mild</small>
-                                <small>Severe</small>
-                            </div>
-                            <div className="d-flex gap-1">
-                                {[...Array(10)].map((_, i) => (
+                            <label className="form-label">Rate from {question.min || 1} to {question.max || 10}:</label>
+                            <div className="d-flex gap-2 flex-wrap">
+                                {Array.from({ length: (question.max || 10) - (question.min || 1) + 1 }, (_, i) => (
                                     <Button
-                                        key={i + 1}
+                                        key={i}
                                         variant="outline-primary"
                                         size="sm"
-                                        onClick={() => handleUserInput(i + 1)}
+                                        onClick={() => handleUserInput((question.min || 1) + i)}
                                         style={{ minWidth: '40px' }}
                                     >
-                                        {i + 1}
+                                        {(question.min || 1) + i}
                                     </Button>
                                 ))}
                             </div>
@@ -182,17 +207,33 @@ Would you like to find ${(specialist || 'doctors').toLowerCase()} in our system?
                 return <CheckboxInput options={question.options || []} onSubmit={handleUserInput} />;
 
             case 'text':
-                return <TextInput onSubmit={handleUserInput} />;
+                return <TextInput onSubmit={handleUserInput} placeholder={question.placeholder} />;
 
             default:
-                return null;
+                return (
+                    <div>
+                        <Button variant="primary" onClick={() => handleUserInput("Continue")}>
+                            Continue
+                        </Button>
+                    </div>
+                );
         }
     };
 
-    // Calculate progress
-    const steps = Object.keys(conversationSteps).length - 1; // Exclude ANALYSIS
-    const currentStepIndex = Object.values(conversationSteps).indexOf(currentStep);
-    const progress = Math.min((currentStepIndex / steps) * 100, 100);
+    const renderMessage = (msg) => {
+        // Ensure message is a string
+        const messageStr = typeof msg.message === 'string' ? msg.message : String(msg.message || '');
+
+        return messageStr.split('\n').map((line, i) => (
+            <div key={i}>
+                {line.includes('**') ? (
+                    <span dangerouslySetInnerHTML={{
+                        __html: line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    }} />
+                ) : line}
+            </div>
+        ));
+    };
 
     return (
         <Container fluid style={{ height: '100vh', background: '#f8f9fa' }}>
@@ -212,62 +253,40 @@ Would you like to find ${(specialist || 'doctors').toLowerCase()} in our system?
                                         borderRadius: '50%',
                                         display: 'flex',
                                         alignItems: 'center',
-                                        justifyContent: 'center'
+                                        justifyContent: 'center',
+                                        fontSize: '24px'
                                     }}
                                 >
-                                    <span style={{ color: '#0d6efd', fontSize: '24px', fontWeight: 'bold' }}>+</span>
+                                    🏥
                                 </div>
                                 <div>
-                                    <h5 className="mb-0">MedAssist</h5>
-                                    <small className="opacity-75">Symptom Checker</small>
+                                    <h5 className="mb-0">Medical Assistant</h5>
+                                    <small className="text-white-50">Symptom Checker</small>
                                 </div>
                             </div>
                         </div>
 
                         {/* Progress */}
-                        <div className="p-4 border-bottom border-white border-opacity-25">
+                        <div className="p-4">
                             <div className="mb-2">
                                 <small>Progress</small>
                             </div>
-                            <ProgressBar
-                                now={progress}
-                                variant="success"
-                                style={{ height: '8px' }}
-                            />
-                            <small className="opacity-75 mt-1">{Math.round(progress)}% Complete</small>
+                            <ProgressBar now={progress} className="mb-2" />
+                            <small className="text-white-50">{Math.round(progress)}% Complete</small>
                         </div>
 
-                        {/* Features */}
-                        <div className="p-4 flex-grow-1">
-                            <h6 className="mb-3">How it works:</h6>
-                            <ul className="list-unstyled">
-                                <li className="mb-2">
-                                    <small>✓ Answer questions about your symptoms</small>
-                                </li>
-                                <li className="mb-2">
-                                    <small>✓ Get AI-powered condition analysis</small>
-                                </li>
-                                <li className="mb-2">
-                                    <small>✓ Receive specialist recommendations</small>
-                                </li>
-                                <li className="mb-2">
-                                    <small>✓ Find nearby healthcare providers</small>
-                                </li>
-                            </ul>
-                        </div>
-
-                        {/* Disclaimer */}
-                        <div className="p-4 border-top border-white border-opacity-25">
-                            <Alert variant="warning" className="small mb-0">
-                                <strong>Medical Disclaimer:</strong> This tool provides information only and is not a substitute for professional medical advice.
+                        {/* Medical Disclaimer */}
+                        <div className="p-4 border-top border-white border-opacity-25 mt-auto">
+                            <Alert variant="warning" className="mb-0 small">
+                                <strong>⚠️ Medical Disclaimer:</strong> This tool is for informational purposes only and does not replace professional medical advice. Always consult a healthcare professional for medical concerns.
                             </Alert>
                         </div>
                     </div>
                 </Col>
 
                 {/* Main Chat Area */}
-                <Col md={9} className="d-flex flex-column p-0">
-                    {/* Messages */}
+                <Col md={9} className="p-0 d-flex flex-column">
+                    {/* Chat Messages */}
                     <div className="flex-grow-1 p-4" style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 200px)' }}>
                         {conversation.map((msg, index) => (
                             <div
@@ -275,22 +294,14 @@ Would you like to find ${(specialist || 'doctors').toLowerCase()} in our system?
                                 className={`d-flex mb-3 ${msg.type === 'user' ? 'justify-content-end' : 'justify-content-start'}`}
                             >
                                 <div
-                                    className={`rounded-3 p-3 ${
+                                    className={`p-3 rounded-3 ${
                                         msg.type === 'user'
                                             ? 'bg-primary text-white'
                                             : 'bg-light text-dark'
                                     }`}
                                     style={{ maxWidth: '75%' }}
                                 >
-                                    {msg.message.split('\n').map((line, i) => (
-                                        <div key={i}>
-                                            {line.includes('**') ? (
-                                                <span dangerouslySetInnerHTML={{
-                                                    __html: line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                                                }} />
-                                            ) : line}
-                                        </div>
-                                    ))}
+                                    {renderMessage(msg)}
                                 </div>
                             </div>
                         ))}
@@ -370,7 +381,7 @@ const CheckboxInput = ({ options, onSubmit }) => {
             </Form>
             <Button
                 variant="primary"
-                onClick={() => onSubmit(selected.length > 0 ? selected : ['None of the above'])}
+                onClick={() => onSubmit(selected.length > 0 ? selected : ['None'])}
                 className="mt-3"
                 disabled={selected.length === 0}
             >
@@ -381,31 +392,39 @@ const CheckboxInput = ({ options, onSubmit }) => {
 };
 
 // Text input component
-const TextInput = ({ onSubmit }) => {
-    const [text, setText] = useState('');
+const TextInput = ({ onSubmit, placeholder = "Type your answer..." }) => {
+    const [value, setValue] = useState('');
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        if (text.trim()) {
-            onSubmit(text.trim());
-            setText('');
+    const handleSubmit = () => {
+        if (value.trim()) {
+            onSubmit(value.trim());
+            setValue('');
+        }
+    };
+
+    const handleKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            handleSubmit();
         }
     };
 
     return (
-        <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-3">
-                <Form.Control
-                    type="text"
-                    placeholder="Type your additional symptoms or information..."
-                    value={text}
-                    onChange={(e) => setText(e.target.value)}
-                />
-            </Form.Group>
-            <Button type="submit" variant="primary" disabled={!text.trim()}>
-                Continue
+        <div className="d-flex gap-2">
+            <Form.Control
+                type="text"
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder={placeholder}
+            />
+            <Button
+                variant="primary"
+                onClick={handleSubmit}
+                disabled={!value.trim()}
+            >
+                Send
             </Button>
-        </Form>
+        </div>
     );
 };
 
